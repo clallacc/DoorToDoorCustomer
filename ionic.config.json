@@ -1,0 +1,7 @@
+{
+  "name": "DoorToDoorCustomer",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
