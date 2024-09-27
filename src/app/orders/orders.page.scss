@@ -1,0 +1,29 @@
+h2 {
+    color: #00829f;
+    font-weight: bold;
+}
+
+.loading-spinner {
+    width: 100%;
+    text-align: center;
+    margin-top: 50px;
+}
+
+.ordersDiv {
+    width: 100%; overflow-x: scroll;
+}
+
+ion-spinner {
+    margin: 0 auto;
+}
+
+@media (prefers-color-scheme: dark) {
+    /*
+     * Dark Colors
+     * -------------------------------------------
+     */
+
+     ion-title {
+        color: #d7d7d7;
+     }
+}

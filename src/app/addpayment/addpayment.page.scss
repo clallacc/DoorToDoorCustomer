@@ -1,0 +1,91 @@
+main-content-div {
+    padding: 10px;
+}
+
+ion-radio  {
+    font-size: 11px;
+}
+
+ion-popover {
+    ion-item {
+        font-size: 10px;
+    }
+}
+
+.add-card {
+    strong {
+        display: block;
+        font-size: 10px;
+        margin-top: 10px;
+        color: #1a8fa9;
+    }
+}
+
+.stored-card-grid {
+    p {
+        text-align: center;
+    }
+    .stored-card-data {
+        ion-chip {
+            font-size: 9px;
+            padding: 5px 10px;
+        }
+        strong {
+            display: block;
+            font-size: 12px;
+        }
+        small{
+            display: block;
+            font-size: 9px;
+            color: #1a8fa9;
+        }
+    }
+    
+}
+
+.expire-item {
+    padding-top: 12px;
+}
+
+.expire-label {
+    position: absolute;
+    top: -13px;
+}
+
+ion-radio::part(container) {
+    width: 20px;
+    height: 20px;
+  
+    border-radius: 8px;
+    border: 2px solid #ddd;
+}
+  
+ion-radio::part(mark) {
+    background: none;
+    transition: none;
+    transform: none;
+    border-radius: 0;
+}
+  
+ion-radio.radio-checked::part(container) {
+    background: #1a8fa9;
+    border-color: transparent;
+}
+  
+ion-radio.radio-checked::part(mark) {
+    width: 6px;
+    height: 10px;
+  
+    border-width: 0px 2px 2px 0px;
+    border-style: solid;
+    border-color: #fff;
+  
+    transform: rotate(45deg);
+}
+
+.payment-method-form {
+    .rounded-outline {
+        border: 1px solid #CCC;
+        border-radius: 5px;
+    }
+}

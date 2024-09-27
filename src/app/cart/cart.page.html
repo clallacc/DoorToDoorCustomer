@@ -1,0 +1,160 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="d2dblue">
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="start">
+      <ion-back-button text="" defaultHref="/"></ion-back-button>
+      <!-- <ion-button (click)="goBack()"><ion-icon color="light" name="chevron-back"></ion-icon></ion-button> -->
+   </ion-buttons>
+   <ion-title class="ion-text-center" size="small"><img height="40" src="../../assets/doortodoorlogolight.png" /></ion-title>
+   <ion-buttons *ngIf="deviceOs === 'android'" slot="end">
+    <ion-button [routerLink]="['/tabs/checkout']">
+      <ion-icon color="light" name="card"></ion-icon>
+    </ion-button>
+  </ion-buttons>
+  <ion-buttons *ngIf="deviceOs === 'android'" slot="end">
+    <ion-button [routerLink]="['/tabs/account']">
+      <ion-icon color="light" name="person"></ion-icon>
+    </ion-button>
+  </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="d2dblue" [fullscreen]="true">
+  <ion-header class="ios-header" collapse="condense">
+    <ion-toolbar color="d2dblue">
+      <ion-buttons slot="start">
+        <ion-back-button text="" defaultHref="/"></ion-back-button>
+        <!-- <ion-button (click)="goBack()"><ion-icon color="light" name="chevron-back"></ion-icon></ion-button> -->
+     </ion-buttons>
+      <ion-title class="ion-text-center" size="large"><img height="40" src="../../assets/doortodoorlogolight.png" /></ion-title>
+      <ion-buttons slot="end">
+        <ion-button [routerLink]="['/tabs/checkout']">
+          <ion-icon color="light" name="card"></ion-icon>
+        </ion-button>
+        <ion-button [routerLink]="['/tabs/account']">
+          <ion-icon color="light" name="person"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <div *ngIf="!cart && !onlineCart" class="main-content-div emptycart">
+    Your cart is empty!
+    <img alt="Shopping Cart" src="/assets/cartfiller.svg" />
+  </div>
+
+  <div class="main-content-div" *ngIf="cart || onlineCart">
+    <!-- Slider -->
+    <swiper-container [slidesPerView]="1" [modules]="swiperModules" autoplay="true">
+      <swiper-slide *ngFor="let shop of quickbuy" [loop]="true">
+        <div *ngIf="quickbuy.length > 0" class="guickbuy">
+          <ion-item (click)="updateCart(shop.id, shop, shop.images[0], '1')" lines="none">
+            <ion-thumbnail>
+              <img [alt]="shop.name" [src]="imageURL(shop.images[0])" />
+            </ion-thumbnail>
+            <ion-label lines="none" class="ion-text-wrap">
+              <p class="ion-text-end" [innerHTML]="shop.name"></p>
+              <h2 color="d2dblue" [innerHTML]="shop.price_html"></h2>
+            </ion-label>
+          </ion-item>
+        </div>
+      </swiper-slide>
+    </swiper-container>
+    <!-- Cart Filler -->
+     <div class="cart-filler-div" *ngIf="cart?.length == 0">
+      <ion-icon name="cart" color="d2dgreen" size="large" aria-setsize="large"></ion-icon>
+      <h3>Your cart is empty</h3>
+      <p>Supermarket shopping at your fingertips - <br/> start shopping</p>
+      <ion-button [routerLink]="['/tabs/products/featured/false']" color="d2dgreen" shape="round" size="small">Start shopping</ion-button>
+     </div>
+    <!-- Cart Items -->
+    <ion-list *ngIf="cart?.length > 0" [inset]="true">
+      <ion-item-divider>
+        <ion-label> <h4>Shopping cart</h4> </ion-label>
+      </ion-item-divider>
+      
+      <ion-item-sliding *ngFor="let cartitems of cart"  detail="true">
+        <ion-item color="light" lines="full">
+          <ion-thumbnail>
+            <img [alt]="cartitems.name" [src]="imageURL(cartitems.images[0])" />
+          </ion-thumbnail>
+          <ion-label class="ion-text-wrap">
+            <ion-row>
+              <ion-col size="7">
+                <p [innerHTML]="cartitems.name"></p>
+              </ion-col>
+              <ion-col class="ion-text-end" size="5">
+                <h2 *ngIf="cartitems.type === 'simple'" [innerHTML]="calculateItemTotal(cartitems.quantity, cartitems.price)"></h2>
+                <h2 *ngIf="cartitems.type === 'woosb'" [innerHTML]="cartitems.price_html"></h2>
+                <span *ngIf="cartitems.type === 'woosb'" [innerHTML]="calculateItemTotal(cartitems.quantity, cartitems.price)"></span>
+                <small *ngIf="!cartitems.on_sale" class="price-each">Each: {{cartitems.price}}</small>
+                <small *ngIf="cartitems.on_sale" class="price-each">Save: <span>{{calculateSavings(cartitems.regular_price, cartitems.price, cartitems.quantity)}}</span></small>
+                <ion-badge *ngIf="cartitems.on_sale" color="d2dorange">onsale</ion-badge>
+              </ion-col>
+            </ion-row>
+            
+          </ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-button class="remove-btn" slot="start" (click)="removeCartItem(cartitems.id)" fill="none"><ion-icon name="remove"></ion-icon>Remove</ion-button>
+          <ion-button (click)="addToShoppingList(cartitems.id, cartitems, imageURL(cartitems.images[0]), cartitems.quantity)" fill="clear" slot="start"><ion-icon color="d2dgreen" name="heart"></ion-icon></ion-button>
+          <ion-badge slot="end" shape="round">
+            <ion-chip size="small" color="d2dblue" (click)="quantityDown(cartitems.id, cartitems.quantity)">-</ion-chip>
+             {{cartitems.quantity}}
+              <ion-chip size="small" color="d2dblue" (click)="quantityUp(cartitems.id, cartitems.quantity)">+</ion-chip> 
+            </ion-badge>
+        </ion-item>
+  
+        <ion-item-options>
+          <ion-item-option (click)="removeCartItem(cartitems.id)" color="danger"><ion-icon slot="icon-only" name="trash"></ion-icon></ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ion-list>
+    <!-- ONLINE Cart Summary -->
+    <ion-progress-bar *ngIf="view_loading" color="d2dblue" type="indeterminate"></ion-progress-bar>
+    <ion-list class="online-cart" *ngIf="onlineCart && onlineCart.length > 0" [inset]="true">
+      <ion-item-divider>
+        <ion-label>
+          <h4>Online cart</h4>
+          <p>Add items from your online shopping cart to device.</p>
+        </ion-label>
+      </ion-item-divider>
+      <ion-item-sliding detail="true">
+        <ion-grid>
+          <ion-row *ngFor="let d2dcart of onlineCart">
+            <ion-col size="3">
+                <ion-thumbnail>
+                  <img [alt]="d2dcart.name" [src]="imageURL(d2dcart.images[0])" />
+                </ion-thumbnail>
+            </ion-col>
+            <ion-col size="6">
+              <ion-item color="light" lines="full">
+                <ion-label class="ion-text-wrap">
+                  <p [innerHTML]="d2dcart.name"></p>
+                </ion-label>
+              </ion-item>
+            </ion-col>
+            <ion-col size="3">
+              <ion-item color="light" lines="none">
+                <ion-button (click)="updateCartSync(d2dcart.id, d2dcart.images[0], d2dcart.quantity)" size="small" color="d2dblue" shape="rounded">Add <ion-icon name="add"></ion-icon></ion-button>
+              </ion-item>
+              <small>Add item to cart.</small>
+            </ion-col>
+          </ion-row>
+          <ion-button (click)="updateCartSyncAll()" size="small" color="d2dblue" shape="rounded">Add All Items<ion-icon name="add"></ion-icon></ion-button>
+        </ion-grid> 
+      </ion-item-sliding>
+    </ion-list>
+     <!-- ONLINE Cart Summary -->
+    <ion-grid class="totals">
+      <ion-row>
+        <ion-col>
+          <h2 style="text-align: right; font-size: 50px; color: #000;">{{total}}</h2>
+          <span class="total-items">total items {{totalitems}}</span>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-button class="main-function-btn" fill="solid" color="d2dblue" [routerLink]="['/tabs/checkout']" expand="block" shape="round">CHECKOUT</ion-button>
+    <ion-button class="empty-shop-cart" [disabled]="cartempty" fill="none" color="d2dgreen" (click)="emptyCart()" expand="block"><span>EMPTY CART</span></ion-button>
+  </div>
+  
+</ion-content>

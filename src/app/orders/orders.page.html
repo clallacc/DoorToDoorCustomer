@@ -1,0 +1,59 @@
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">
+        Orders
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <div class="main-content-div">
+    <ion-item class="loading-spinner" *ngIf="!orders">
+      <ion-spinner name="circles"></ion-spinner>
+    </ion-item>
+    <ion-list *ngIf="orders" [inset]="true">
+      <ion-item *ngFor="let order of orders">
+        <ion-label>
+          <h2>
+            #{{order.number}}
+            <ion-button style="float: right;" *ngIf="order.status !== 'cancelled'" (click)="cancelOrder(order.number)" color="d2dorange" size="small" slot="end">Cancel</ion-button>
+          </h2>
+          <ion-grid>
+            <ion-row>
+              <ion-col>
+                <small>Date:</small>
+                <p>{{formatDate(order.date_created)}}</p>
+              </ion-col>
+              <ion-col>
+                <small>Status:</small>
+                <p>{{order.status}}</p>
+              </ion-col>
+              <ion-col>
+                <small>Total:</small>
+                <h2>{{order.currency_symbol}}{{order.total}}</h2>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <small>Payment method:</small>
+                <h3> {{order?.payment_method}}</h3>
+              </ion-col>
+              <ion-col>
+                <small>Delivery:</small>
+                <p>{{order.shipping_lines[0]?.method_title}}</p>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          
+          <div class="ordersDiv">
+            <ion-chip color="d2dblue" *ngFor="let lineproducts of order.line_items" (click)="updateCart(lineproducts.product_id)">
+              <ion-avatar>
+                <img [alt]="lineproducts.name" [src]="imageURL(lineproducts.image)" />
+              </ion-avatar>
+              <ion-label>{{lineproducts.name}}</ion-label>
+            </ion-chip>
+          </div>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

@@ -1,0 +1,120 @@
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">
+        <span class="add-card" *ngIf="showStoreCards">
+          Add payment method
+          <strong (click)="showStoreCards = false;">view stored cards</strong>
+        </span>
+        <span *ngIf="!showStoreCards">Stored cards</span>
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <div class="main-content-div">
+    <ion-grid *ngIf="showStoreCards" class="payment-method-form">
+      <ion-row>
+        <ion-col>
+          <ion-label>
+            <p>Enter card information</p>
+          </ion-label>
+          <ion-item class="rounded-outline" lines="full">
+            <ion-input required [(ngModel)]="card_number" label="Card number*" labelPlacement="floating" [ngModelOptions]="{standalone: true}"  type="number"></ion-input>
+        </ion-item>
+        </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col>
+            <ion-item class="rounded-outline" lines="full">
+              <ion-input required [(ngModel)]="first_name" label="First name*" labelPlacement="floating" [ngModelOptions]="{standalone: true}"  type="text"></ion-input>
+          </ion-item>
+          </ion-col>
+          <ion-col>
+            <ion-item class="rounded-outline" lines="full">
+              <ion-input required [(ngModel)]="last_name" label="Last name*" labelPlacement="floating" [ngModelOptions]="{standalone: true}"  type="test"></ion-input>
+          </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+        <ion-col>
+          <ion-item class="expire-item rounded-outline" lines="full">
+            <p class="expire-label">Expiration date*</p>
+            <ion-select aria-label="month" [(ngModel)]="card_expiry_month" [ngModelOptions]="{standalone: true}" placeholder="Month">
+              <ion-select-option *ngFor="let month of expiry_month" [value]="month">{{month}}</ion-select-option>
+            </ion-select>
+            <ion-select aria-label="year" required [(ngModel)]="card_expiry_year" [ngModelOptions]="{standalone: true}" placeholder="Year">
+              <ion-select-option *ngFor="let year of expiry_year" [value]="year.year_abr">{{year.year_full}}</ion-select-option>
+            </ion-select>
+        </ion-item>
+        </ion-col>
+        <ion-col>
+          <ion-item class="rounded-outline" lines="full">
+            <ion-input required [(ngModel)]="cvv" label="CVV*" labelPlacement="floating" [ngModelOptions]="{standalone: true}"  type="number"></ion-input>
+        </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-item lines="full">
+            <ion-label><p>Billing address</p></ion-label>
+        </ion-item>
+        </ion-col>
+        <ion-col>
+          <ion-item lines="full">
+            <ion-label><p>Add new address</p></ion-label>
+        </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-item lines="full">
+            <ion-label>
+              <ion-radio-group [(ngModel)]="use_default_address" [value]="true" [allowEmptySelection]="true">
+                <ion-radio value="true" labelPlacement="start">Use default delivery address</ion-radio>
+              </ion-radio-group>
+              <p >{{user_details.customer.billing.address_1}} {{user_details.customer?.billing.address_2}} {{user_details.customer.billing.city}}</p>
+            </ion-label>
+        </ion-item>
+        </ion-col>
+        <ion-col>
+          <ion-item lines="full">
+            <ion-label>
+              <ion-radio-group [(ngModel)]="use_default_card" [value]="1" [allowEmptySelection]="true">
+                <ion-radio value="1" labelPlacement="start">Set card as default</ion-radio>
+              </ion-radio-group>
+            </ion-label>
+        </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-button (click)="savecard()" fill="outline" color="d2dblue" expand="block">Save card</ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-grid class="stored-card-grid" *ngIf="!showStoreCards">
+      <ion-row *ngIf="!user_details?.payment_methods">
+        <ion-col>
+          <p>You have NO stored Cards</p>
+          <ion-button (click)="showStoreCards = true;" color="d2dblue" expand="block" fill="outline" size="small" shape="round">
+            Add payment method
+          </ion-button>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngIf="user_details?.payment_methods">
+        <ion-col>
+          <ion-list class="stored-card-data">
+            <ion-item *ngFor="let cardpayments of user_details?.payment_methods; let i = index">
+              <ion-icon style="margin-right: 10px;" aria-hidden="true" [src]="showCardIcon(cardpayments.card_brand)" slot="start"></ion-icon>
+              <ion-label>
+                <ion-text color="medium"><strong>{{cardpayments.card_id}}</strong><small>{{cardpayments.card_brand}}</small></ion-text>
+                <p></p>
+              </ion-label>
+              <ion-chip *ngIf="cardpayments.default_card === '0'" (click)="setDefaultCard(i)" [outline]="true" size="small" slot="end">Select</ion-chip>
+              <ion-chip *ngIf="cardpayments.default_card === '1'" color="d2dblue" size="small" slot="end">Default</ion-chip>
+            </ion-item>
+          </ion-list>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>

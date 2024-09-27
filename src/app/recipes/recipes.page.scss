@@ -1,0 +1,42 @@
+h2 {
+    color: #00829f;
+    font-weight: bold;
+}
+
+.loading-spinner {
+    width: 100%;
+    text-align: center;
+    margin-top: 50px;
+}
+
+.ordersDiv {
+    width: 100%; overflow-x: scroll;
+}
+
+ion-spinner {
+    margin: 0 auto;
+}
+
+ion-thumbnail.recipe-image {
+    margin: 10px;
+    aspect-ratio: 1/1;
+    width: 100%;
+    height: 20%;
+}
+
+ion-segment {
+    margin: 0 0px 0 5%;
+    width: 90%;
+}
+
+
+@media (prefers-color-scheme: dark) {
+    /*
+     * Dark Colors
+     * -------------------------------------------
+     */
+
+     ion-title {
+        color: #d7d7d7;
+     }
+}

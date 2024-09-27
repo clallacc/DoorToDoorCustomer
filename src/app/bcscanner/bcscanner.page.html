@@ -1,0 +1,51 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="light">
+    <!-- <ion-title>
+      <img height="40" src="../../assets/doortodoorlogolight.png" />
+    </ion-title> -->
+    <ion-buttons>
+      <ion-button (click)="scan()">
+        <ion-icon color="light" name="barcode-outline"></ion-icon> 
+        Scan barcodes, QR codes
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light" [fullscreen]="true">
+  <!-- <div class="main-content-div">
+    <ion-list>
+      <ion-item *ngFor="let barcode of barcodes">
+        <ion-label position="stacked">{{ barcode.format }}</ion-label>
+        <ion-input type="text" [value]="barcode.rawValue"></ion-input>
+      </ion-item>
+    </ion-list>
+  </div> -->
+  <div class="main-content-div">
+    <div *ngIf="productData.length === 0" class="scan-intro">
+      <ion-thumbnail (click)="scan()">
+        <img src="./assets/barcodefiller.svg"/>
+      </ion-thumbnail>
+      <p>Tap the button above to use your camera as a barcode or QR code scanner. </p>
+      <small>Use this feature to quickly find products to add to your cart or shopping list.. </small>
+    </div>
+
+    <ion-list [inset]="true">
+      <ion-item *ngFor="let products of productData" lines="full" [button]="true">
+        <ion-thumbnail [routerLink]="['/tabs/productdetail/', products.id]">
+          <img [alt]="products.name" [src]="imageURL(products.images[0].src)" />
+        </ion-thumbnail>
+        <ion-label [routerLink]="['/tabs/productdetail/', products.id]"  class="ion-text-wrap">
+          <h2 [innerHTML]="products.name"></h2>
+          <p [innerHTML]="products.price_html"></p>
+        </ion-label>
+        <ion-button (click)="updateCart(products.id, products, imageURL(products.images[0]), '1')" color="d2dblue" fill="clear" class="add-single-cart" slot="end"> 
+          <ion-icon color="d2dblue" name="cart"></ion-icon>  
+        </ion-button>
+        <ion-button (click)="addToShoppingList(products.id, products, products.images[0], '1')" color="d2dgreen" fill="clear" class="add-single-cart" slot="end"> 
+          <ion-icon color="d2dgreen" name="heart"></ion-icon>  
+        </ion-button>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

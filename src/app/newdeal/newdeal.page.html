@@ -1,0 +1,117 @@
+<ion-content color="light" [fullscreen]="true">
+  <ion-header>
+    <ion-toolbar color="light">
+      <ion-title class="ion-text-center" size="small">
+        <h2><img height="40" src="../../assets/doortodoorlogo.png" /></h2>
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <div *ngIf="new_deals">
+    <ion-card *ngFor="let deal of new_deals">
+      <img [src]="fiximgUrl(deal.jetpack_featured_media_url)" />
+      <div class="card-content" [innerHTML]="deal.content.rendered"></div>
+    </ion-card>
+  </div>
+  <!-- Page data -->
+  <ion-grid>
+    <ion-row>
+      <ion-col *ngFor="let products of deal_products" size="6">
+        <div class="product-box">
+          <div class="sale-span">
+            ${{products.price}}
+          </div>
+          <div class="shoplist-btn">
+            <ion-button (click)="addToShoppingList(products.id, products, products.images[0], '1')" fill="clear">
+              <ion-icon color="d2dgreen" name="heart"></ion-icon>
+            </ion-button>
+          </div>
+          <div class="product-img">
+            <img [routerLink]="['/tabs/productdetail/', products.id]" [src]="imageURL(products.images[0])" [alt]="products.name" />
+            <ion-fab-button (click)="updateCart(products.id, products, imageURL(products.images[0]), '1')" color="d2dorange" size="small">
+              <ion-icon size="small" name="cart-sharp"></ion-icon>
+          </ion-fab-button>
+          </div>
+          <ion-item [button]="true" [routerLink]="['/tabs/productdetail/', products.id]" lines="none">
+            <ion-label class="ion-text-wrap">
+              <ion-note>
+              <p>{{products.name}}</p>
+            </ion-note>
+          </ion-label>
+        </ion-item>
+      </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <!-- Page Data -->
+  <div *ngIf="content_loading">
+    <ion-card>
+      <ion-list>
+        <ion-list-header>
+          <ion-skeleton-text [animated]="true" style="width: 80px"></ion-skeleton-text>
+        </ion-list-header>
+        <ion-item>
+          <ion-thumbnail slot="start">
+            <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+          </ion-thumbnail>
+          <ion-label>
+            <h3>
+              <ion-skeleton-text [animated]="true" style="width: 80%;"></ion-skeleton-text>
+            </h3>
+            <p>
+              <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
+            </p>
+            <p>
+              <ion-skeleton-text [animated]="true" style="width: 30%;"></ion-skeleton-text>
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+    <ion-card>
+      <ion-list>
+        <ion-list-header>
+          <ion-skeleton-text [animated]="true" style="width: 80px"></ion-skeleton-text>
+        </ion-list-header>
+        <ion-item>
+          <ion-thumbnail slot="start">
+            <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+          </ion-thumbnail>
+          <ion-label>
+            <h3>
+              <ion-skeleton-text [animated]="true" style="width: 80%;"></ion-skeleton-text>
+            </h3>
+            <p>
+              <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
+            </p>
+            <p>
+              <ion-skeleton-text [animated]="true" style="width: 30%;"></ion-skeleton-text>
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+    <ion-card>
+      <ion-list>
+        <ion-list-header>
+          <ion-skeleton-text [animated]="true" style="width: 80px"></ion-skeleton-text>
+        </ion-list-header>
+        <ion-item>
+          <ion-thumbnail slot="start">
+            <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+          </ion-thumbnail>
+          <ion-label>
+            <h3>
+              <ion-skeleton-text [animated]="true" style="width: 80%;"></ion-skeleton-text>
+            </h3>
+            <p>
+              <ion-skeleton-text [animated]="true" style="width: 60%;"></ion-skeleton-text>
+            </p>
+            <p>
+              <ion-skeleton-text [animated]="true" style="width: 30%;"></ion-skeleton-text>
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+  </div>
+</ion-content>

@@ -1,0 +1,174 @@
+.product-quick-links {
+    position: absolute;
+    bottom: 0;
+    padding-top: 20px;
+}
+
+.product-image {
+    display: block;
+    text-align: center;
+    padding: 5px;
+    background-color: #ffffff;
+    border-radius: 6px;
+}
+
+h2 {
+    margin-bottom: 5px;
+}
+
+h3 {
+    margin-bottom: 30px;
+}
+
+.main-content-div {
+    background-color: #ffffff;
+    color: #000000;
+    height: 100%;
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    overflow: scroll;
+}
+
+
+.search ion-list {
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    position: absolute;
+    opacity: 0.93;
+    filter: drop-shadow(5px 5px 14px  rgba(0,0,0,0.26));
+}
+
+.sale-span {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #00829F;
+    border-radius: 15px 0 20px 0;
+    color: #fff;
+    padding: 10px 20px 10px 20px;
+    min-width: 60px;
+    min-height: 20px;
+    display: inline-block;
+    position: unset;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.emptycheckout {
+    width: 100%;
+    height: 100vh;
+    background-color: #ffffff;
+    color: #00829F;
+    text-align: center;
+    padding-top: 80px;
+}
+
+.emptycheckout img{
+    max-width: 50%;
+    display: block;
+    margin: 0 auto;
+    margin-top: 20px;
+}
+
+.priceing p{
+    padding-left: 10px;
+}
+
+ion-thumbnail {
+    margin: 10px;
+    aspect-ratio: 1/1;
+    height: 90%;
+}
+
+.datetime-picker {
+    text-align: left;
+}
+
+.datetime-picker h5{
+    width: 100%;
+}
+
+ion-datetime {
+    --placeholder-color: #aad649;
+}
+
+ion-datetime:not(.datetime-placeholder) {
+    color: #aad649;
+}
+
+.coupon-small {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgb(255, 0, 51);
+}
+.payment-method {
+    margin: 20px 10px;
+    border-radius: 10px;
+    background: #FFFFFF;
+    filter: drop-shadow(5px 5px 8px  rgba(109, 107, 107, 0.1));
+    div {
+        margin: 10px;
+        padding: 50px 0;
+    }
+    ion-icon {
+        margin: -3px 2px;
+    }
+}
+
+ion-datetime-button {
+    width: 60%;
+    --background: #aad649;
+}
+  
+  ion-label {
+    strong {
+        display: block;
+        max-width: calc(100% - 60px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 12px;
+    }
+    ion-text {
+        font-size: 12px;
+    }
+  }
+
+ion-item {
+    ion-chip {
+        font-size: 9px;
+        padding: 5px 10px;
+    }
+}
+
+  .review-details {
+    h1 {
+        font-weight: bold;
+    }
+    small{
+        font-size: 50%;
+    }
+    .payment-method-Item p{
+        margin-bottom: 0px;
+    }
+  }
+
+  .order-confirmation {
+    ion-thumbnail {
+        text-align: center;
+    }
+    img {
+        max-width: 70%;
+        max-height: 70%;
+    }
+  }
+
+@media (prefers-color-scheme: dark) {
+    /*
+     * Dark Colors
+     * -------------------------------------------
+     */
+
+     ion-datetime-button::part(native) {
+        color: #aad649;
+    }
+}

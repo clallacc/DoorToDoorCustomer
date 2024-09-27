@@ -1,0 +1,167 @@
+body {
+    --background: transparent;
+}
+
+ion-content {
+    height: 20vh;
+}
+
+ion-toolbar ion-button {
+  text-align: center;
+  width: 100%;
+}
+
+ion-toolbar ion-button ion-icon {
+  margin-right: 10px;
+}
+
+.ios-header ion-title {
+  margin-left: 40px;
+}
+
+.product-quick-links {
+  position: absolute;
+  bottom: 0;
+  padding-top: 20px;
+}
+
+.product-image {
+  display: block;
+  text-align: center;
+  padding: 5px;
+  background-color: #ffffff;
+  border-radius: 6px;
+}
+
+h2 {
+  margin-top: 18px;
+  font-size: 15px;
+  padding: 0px 0px 0px 20px;
+}
+
+h3 {
+  margin-bottom: 30px;
+}
+
+ion-label p {
+  padding-left: 20px;
+}
+
+ion-searchbar {
+  z-index: 100;
+}
+
+.search {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  position: fixed;
+  opacity: 0.93;
+  filter: drop-shadow(5px 5px 14px  rgba(0,0,0,0.26));
+  height: 83vh;
+  overflow: scroll;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+.search ion-list {
+  overflow: scroll;
+}
+
+.search h3 {
+  font-weight: bold;
+  font-size: 1.5em;
+  padding: 0px 0px 0px 20px;
+}
+
+.search ion-thumbnail {
+  margin: 10px;
+  aspect-ratio: 1/1;
+  width: 100%;
+  height: 90%;
+}
+
+.search-history {
+  width: 100%;
+  height: 20vh;
+  overflow: scroll;
+  span {
+      display: inline-block;
+      width: 50px;
+      height: 60px;
+  }
+  .container {
+      width: 100%;
+  }
+  ion-item {
+      float: left;
+  }
+}
+
+.shoplist-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 1;
+}
+
+// ADJUST IMAGE BOUNDING BOX
+.product-img {
+  display: block;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.product-img:before{
+  content: "";
+  display: block;
+  padding-top: 100%;
+}
+
+.product-img img {
+  position:  absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  color: white;
+  text-align: center;
+  margin: auto;
+}
+
+.scan-intro {
+  width: 100%;
+  text-align: center;
+  padding: 20px;
+  ion-thumbnail {
+    margin: 10px auto;
+    aspect-ratio: 1/1;
+    width: 30%;
+    height: 90%;
+}
+}
+
+
+// Hide all elements
+app-bcscanner.barcode-scanner-active {
+    visibility: hidden;
+    --background: transparent;
+    --ion-background-color: transparent;
+}
+  
+  // Show only the barcode scanner modal
+  .barcode-scanner-modal { 
+    visibility: visible;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .barcode-scanner-modal {
+      --background: transparent;
+      --ion-background-color: transparent;
+    }
+
+    h2, p, small{
+      color: #2e2d2d;
+    }
+  }

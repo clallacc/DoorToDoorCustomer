@@ -1,0 +1,42 @@
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">Recipes</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <div class="main-content-div">
+    <ion-item class="loading-spinner" *ngIf="!recipes">
+      <ion-spinner name="circles"></ion-spinner>
+    </ion-item>
+
+    <div *ngIf="recipes" class="recipe-div">
+      <ion-card *ngFor="let recipe of recipes">
+        <ion-thumbnail class="recipe-image">
+          <img [alt]="recipe.title.rendered" [src]="imageURL(recipe.jetpack_featured_media_url)" />
+        </ion-thumbnail>
+        
+        <ion-card-header>
+          <ion-card-title color="d2dblue" [innerHTML]="recipe.title.rendered"></ion-card-title>
+          <ion-card-subtitle>Recipe</ion-card-subtitle>
+        </ion-card-header>
+
+        <ion-segment value="default">
+          <ion-segment-button (click)="showContent('short-'+recipe.id)" value="default">
+            <ion-label>Description</ion-label>
+          </ion-segment-button>
+          <ion-segment-button (click)="showContent('recipe-'+recipe.id)" value="segment">
+            <ion-label>Full Recipe</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      
+        <ion-card-content>
+          <div *ngIf="contentView !== 'recipe-'+recipe.id" [innerHTML]="recipe.excerpt.rendered"> </div>
+          <div *ngIf="contentView === 'recipe-'+recipe.id" [innerHTML]="recipe.content.rendered"> </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+    <ion-infinite-scroll (ionInfinite)="recipeIonInfinite($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </div>
+</ion-content>

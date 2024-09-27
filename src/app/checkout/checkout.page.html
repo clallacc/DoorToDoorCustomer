@@ -1,0 +1,321 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="d2dblue">
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="start">
+      <ion-back-button text="" defaultHref="/"></ion-back-button>
+   </ion-buttons>
+    <ion-title class="ion-text-center" size="small"><img height="40" src="../../assets/doortodoorlogolight.png" /></ion-title>
+    <ion-buttons slot="end">
+      <ion-button *ngIf="deviceOs === 'android'" [routerLink]="['/tabs/cart']">
+        <ion-icon color="light" name="cart"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="end">
+      <ion-button [routerLink]="['/tabs/account']">
+        <ion-icon color="light" name="person"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="d2dblue" [fullscreen]="true">
+  <ion-header class="ios-header" collapse="condense">
+    <ion-toolbar color="d2dblue">
+      <ion-buttons slot="start">
+        <ion-back-button text="" defaultHref="/"></ion-back-button>
+     </ion-buttons>
+      <ion-title class="ion-text-center" size="large"><img height="40" src="../../assets/doortodoorlogolight.png" /></ion-title>
+      <ion-buttons slot="end">
+        <ion-button [routerLink]="['/tabs/cart']">
+          <ion-icon color="light" name="cart"></ion-icon>
+        </ion-button>
+        <ion-button [routerLink]="['/tabs/account']">
+          <ion-icon color="light" name="person"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    
+  </ion-header>
+  <div *ngIf="cart?.length === 0 || !cart" class="main-content-div emptycheckout">
+    You're not ready for checkout!
+    <img alt="Checkout" src="/assets/checkoutfiller.svg" />
+  </div>
+
+  <!-- Order Checkout -->
+  <div class="main-content-div" *ngIf="cart?.length > 0">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="8">
+          <h2>Place your order</h2>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="8">
+          <h6>Product</h6>
+        </ion-col>
+        <ion-col size="4">
+          <h6>Subtotal</h6>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngFor="let cartitems of cart">
+        <ion-col size="8">
+          <ion-item color="light">
+            <ion-thumbnail>
+              <img [alt]="cartitems.name" [src]="imageURL(cartitems.images[0])" />
+            </ion-thumbnail>
+            <p [innerHTML]="formatProductName(cartitems.name, cartitems.quantity)"></p>
+          </ion-item>
+        </ion-col>
+        <ion-col size="4">
+          <h4 [innerHTML]="calculateItemTotal(cartitems.quantity, cartitems.price)"></h4>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-item color="light">
+            <ion-input #couponCode (keyup.enter)="checkCoupon(couponCode.value)" [(ngModel)]="coupon_code" label="Apply Coupon" placeholder="Coupon code"></ion-input>
+            <small *ngIf="coupon_notice" style="color: crimson;">{{coupon_notice}}</small>
+            <ion-button *ngIf="coupon_code" (click)="cancelCoupon()" color="d2dblue" fill="clear" size="small"><ion-icon name="close-circle"></ion-icon></ion-button>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="2">
+          <ion-thumbnail class="prime-image">
+            <img alt="Download Prime" src="/assets/dtodprimelogo.png" />
+          </ion-thumbnail>
+        </ion-col>
+        <ion-col size="10">
+          <ion-item color="light" *ngIf="!isprime" lines="full">
+            <ion-label class="ion-text-wrap">
+              <p>Save on scheduling and delivery when you sign-up for Door to Door Prime. <ion-button (click)="purchasePrime()" color="d2dgreen">Purchase prime</ion-button></p>
+            </ion-label>
+          </ion-item>
+          <ion-item color="light" *ngIf="isprime" lines="full">
+            <ion-label class="ion-text-wrap">
+              <p>You are shopping as a Valued Prime Customer.</p>
+              <p><strong style="color: #00829f;">Enjoy FREE/SCHEDULED DELIVERY</strong>.</p>
+            </ion-label>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-item color="light" lines="none" class="datetime-picker">
+            <h5>Schedule your order</h5>
+          </ion-item>
+          <ion-item color="light" class="datetime-picker">
+            <ion-datetime-button [disabled]="!customer_isloggedin" color="d2dblue" datetime="datetime"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime (ionChange)="dateSelected($event)" [isDateEnabled]="isDateEnabled" presentation="date" color="d2dblue" id="datetime"></ion-datetime>
+              </ng-template>
+            </ion-modal>
+            <ion-select class="ion-margin-start" (ionChange)="timeSelection($event)" [value]="schedule_selected_time" [disabled]="schedule_times_active" placeholder=" Delivery time" aria-label="Times">
+              <ion-select-option [value]="null">None</ion-select-option>
+              <ion-select-option *ngFor="let scheduleTime of schedule_times" [value]="scheduleTime">{{scheduleTime}}</ion-select-option>
+            </ion-select>
+            <ion-button *ngIf="clearScheduleActive" (click)="resetSchedule()" color="d2dblue" fill="clear" size="small" slot="end">
+              <ion-icon name="close-circle"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          <ion-item color="light">
+            <ion-note *ngIf="customer.customer?.billing">
+              <h4>Deliver to {{customer.customer?.billing.first_name}} {{customer.customer?.billing.last_name}}</h4> <p>{{customer.customer?.billing.address_1}} {{customer.customer?.billing.address_2}},  {{customer.customer?.billing.city}}, {{customer.customer?.billing.state}}. {{customer.customer?.billing.country}}</p> <ion-button (click)="updateAddress()" color="d2dblue" fill="clear">Change delivery address</ion-button>
+            </ion-note>
+            <ion-note *ngIf="!customer.customer?.billing">
+              <h4>Deliver to Guest</h4> <p>No addresss associated to this account.</p> <ion-button (click)="updateAddress()" color="d2dblue" fill="clear">Add address</ion-button>
+            </ion-note>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row class="priceing">
+        <ion-col size="8">
+          <small>Items ({{totalitems}})</small>
+        </ion-col>
+      </ion-row>
+      <ion-row class="priceing">
+        <ion-col size="8">
+          <p>Subtotal</p>
+        </ion-col>
+        <ion-col size="4">
+          <h4>{{subtotal}}</h4>
+        </ion-col>
+      </ion-row>
+      <ion-row class="priceing">
+        <ion-col size="8">
+          <p>Delivery</p>
+        </ion-col>
+        <ion-col size="4">
+          <h4>${{delivery}}</h4>
+        </ion-col>
+      </ion-row>
+      <ion-row class="priceing">
+        <ion-col size="8">
+          <p>Schedule Fee</p>
+        </ion-col>
+        <ion-col size="4">
+          <h4>${{scheduling}}</h4>
+        </ion-col>
+      </ion-row>
+      <ion-row class="priceing">
+        <ion-col size="8">
+          <p>Total</p>
+        </ion-col>
+        <ion-col size="4">
+          <h4>{{total}}</h4>
+          <small class="coupon-small" *ngIf="coupon_code && coupon_discount">-<span *ngIf="coupon_type === 'percent'">%</span><span *ngIf="coupon_type === 'fixed_cart'">$</span>{{coupon_discount}} {{coupon_code}}</small>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="12">
+          <ion-button (click)="showNoteField()" color="d2dblue" expand="full" fill="clear">
+            <small *ngIf="!noteFieldActive">
+              <ion-icon class="ion-margin-top" name="chevron-down"></ion-icon>
+              ADD ORDER NOTE</small>
+            <small *ngIf="noteFieldActive">
+              <ion-icon class="ion-margin-top" name="chevron-up"></ion-icon>
+              ORDER NOTE</small>
+          </ion-button>
+          <ion-item *ngIf="noteFieldActive">
+            <ion-textarea (ionChange)="addCustomerNote($event)" label="PROVIDE ADDITIONAL INFORMATION:" labelPlacement="floating" rows="5"></ion-textarea>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <div class="payment-method">
+      <ion-segment (ionChange)="paymentSegmentChanged($event)" swipeGesture="true" color="d2dgreen" value="cod" [(ngModel)]="paymentId">
+        <ion-segment-button (click)="selectPaymentSection('cod')" value="cod">
+          <ion-label><ion-icon name="cash"></ion-icon> Pay on delivery </ion-label>
+        </ion-segment-button>
+        <ion-segment-button (click)="selectPaymentSection('ggfac')" value="ggfac">
+          <ion-label><ion-icon name="card"></ion-icon> Card Payment </ion-label>
+        </ion-segment-button>
+      </ion-segment>
+      <div *ngIf="paymentId === 'cod'">
+        <h4><ion-icon name="car-outline"></ion-icon>Payment on Delivery</h4>
+        <p>Pay using a Linx debit card upon delivery.</p>
+      </div>
+      <div *ngIf="paymentId === 'ggfac'">
+        <h4><ion-icon name="wallet-outline"></ion-icon> Payment method</h4>
+        <ion-button [disabled]="!customer_isloggedin" (click)="addCCPaymentMethod(true)" color="d2dblue" expand="block" fill="outline" size="small" shape="round">
+          Add payment method
+        </ion-button>
+        <ion-button *ngIf="!customer_isloggedin" (click)="loginRegister()" color="d2dgreen" expand="block" fill="solid" size="small" shape="round">
+          Login/Register
+        </ion-button>
+        <ion-list>
+          <ion-item *ngFor="let payments of customer?.payment_methods; let i = index">
+            <ion-icon style="margin-right: 10px;" aria-hidden="true" [src]="showCardIcon(payments.card_brand)" slot="start"></ion-icon>
+            <ion-label>
+              <strong>{{payments.card_id}}</strong>
+              <ion-text color="medium">Select payment by {{payments.card_brand}}</ion-text>
+            </ion-label>
+            <ion-chip *ngIf="payments.default_card === '0'" [outline]="true" (click)="setDefaultCard(i)" size="small" slot="end">Select</ion-chip>
+            <ion-chip *ngIf="payments.default_card === '1'" color="d2dblue" size="small" slot="end">Default</ion-chip>
+          </ion-item>
+        </ion-list>
+      </div>
+    </div>
+    <ion-button class="main-function-btn" [disabled]="orderDisabled" (click)="checkoutReview(true)" fill="solid" color="d2dblue" expand="block" shape="round">PLACE ORDER</ion-button>
+  </div>
+
+  <!-- Order Review -->
+  <ion-modal [isOpen]="checkoutState" [initialBreakpoint]="0.75" [breakpoints]="[0, 0.5, 1]" (ionModalDidDismiss)="checkoutReview(false)">
+    <ng-template>
+      <!-- Show order confirmation -->
+      <ion-content *ngIf="!show_order_complete_notice" color="light" class="ion-padding order-confirmation">
+        <div class="main-content-div review-details" *ngIf="cart?.length > 0">
+          <h6>Order Review</h6>
+          <ion-list>
+            <ion-item lines="none" class="ion-text-center">
+              <ion-label>
+                <h1 *ngIf="revised_total === 0" class="ion-text-center">{{total}}</h1>
+                <h1 *ngIf="revised_total !== 0" class="ion-text-center">{{revised_total}}</h1>
+                <p class="ion-text-center">Total</p>
+              </ion-label>
+            </ion-item>
+            <ion-item lines="full" *ngIf="isprime">
+              <p><ion-icon color="d2dorange" class="ion-padding-end" name="star"></ion-icon>Prime Customer</p>
+            </ion-item>
+            <ion-item lines="full">
+                <p slot="start">Delivery Fee:</p>
+                <p slot="end">${{delivery}}</p>
+            </ion-item>
+            <ion-item lines="full">
+              <p slot="start">Schedule Fee:</p>
+              <p slot="end">${{scheduling}}</p>
+          </ion-item>
+          <ion-item lines="full" class="payment-method-Item">
+            <p slot="start">Payment Method:</p>
+            <span class="ion-text-end" slot="end">
+              <p  style="line-height: 0px; margin: 0px;">{{paymentTitle}}</p>
+              <small class="ion-text-end">
+                {{paymentDescription}}
+              </small>
+            </span>
+        </ion-item>
+        <ion-item lines="full" *ngIf="card_number">
+          <p slot="start">Card:</p>
+          <p slot="end">{{card_number}}</p>
+      </ion-item>
+      <ion-item lines="full" *ngIf="coupon_code && coupon_discount">
+        <p slot="start">Coupon:</p>
+        <p slot="end"> 
+          <span *ngIf="coupon_type === 'percent'">%</span><span *ngIf="coupon_type === 'fixed_cart'">$</span>{{coupon_discount}} {{coupon_code}}
+        </p>
+      </ion-item>
+      <ion-item lines="full" *ngIf="schedule_selected_date && schedule_selected_time">
+        <p slot="start">Delivery Day/Time:</p>
+        <p slot="end">{{schedule_selected_date}} | {{schedule_selected_time}}</p>
+    </ion-item>
+    <ion-item lines="full" *ngIf="customer.customer?.shipping.address_1">
+      <p slot="start">Deliver to: {{customer.customer?.shipping.address_1}} {{customer.customer?.shipping.address_2}} {{customer.customer?.shipping.city}} {{customer.customer?.shipping.state}}</p>
+    </ion-item>
+    <ion-item lines="full" *ngIf="!customer.customer?.shipping.address_1 && customer.customer?.billing.address_1">
+      <p slot="start">Deliver to: {{customer.customer?.billing.address_1}} {{customer.customer?.billing.address_2}} {{customer.customer?.billing.city}} {{customer.customer?.billing.state}}</p>
+    </ion-item>
+    <ion-item lines="full" *ngIf="customerNote">
+      <ion-label slot="start"><small>Order Note:</small></ion-label>
+      <p slot="start">{{customerNote}}</p>
+    </ion-item>
+    <ion-list *ngIf="removedCheckoutItems.length > 0">
+      <ion-progress-bar *ngIf="removedCheckoutItems && removedCheckoutItems.length === 0" color="d2dgreen" type="indeterminate"></ion-progress-bar>
+      <ion-list-header>
+        <ion-label>
+          <p style="line-height: 0px; margin: 0px;">Items removed from checkout</p>
+          <small>The listed are currently out of stock.</small>
+        </ion-label>
+      </ion-list-header>
+      <ion-item *ngFor="let removedCheckoutItem of removedCheckoutItems" lines="none">
+        <ion-thumbnail>
+          <img [src]="imageURL(removedCheckoutItem.images[0])" />
+        </ion-thumbnail>
+        <p [innerHTML]="removedCheckoutItem.name"></p>
+      </ion-item>
+    </ion-list>
+      <ion-item lines="none" class="ion-margin-top">
+        <ion-button class="ion-padding" [disabled]="orderDisabled" (click)="checkoutReview(false)" fill="solid" color="d2dgreen" expand="block" shape="round" slot="start">CANCEL</ion-button>
+        <ion-button class="ion-padding" [disabled]="orderDisabled" (click)="checkout()" fill="solid" color="d2dblue" expand="block" shape="round" slot="end">COMPLETE ORDER</ion-button>
+      </ion-item>
+          </ion-list>
+        </div>
+      </ion-content>
+      <!--End show order confirmation -->
+      <!-- Show order Conplete -->
+      <ion-content *ngIf="show_order_complete_notice" color="light" class="ion-padding">
+        <div class="main-content-div review-details ion-text-center ion-margin-top">
+          <ion-icon style="font-size: 100%;" name="checkmark-circle" color="d2dgreen" size="large"></ion-icon>
+          <h2>Order Complete!</h2>
+          <p>Thank you for your order! You will receive an email confirmation shortly.</p>
+          <p>Check the status of your order on the <a (click)="showOrders()">Orders Screen.</a></p>
+          <ion-button class="ion-padding ion-margin-top" (click)="continueShopping()" fill="solid" color="d2dblue">Continue shopping</ion-button>
+        </div>
+      </ion-content>
+
+    </ng-template>
+  </ion-modal>
+</ion-content>

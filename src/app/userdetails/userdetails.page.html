@@ -1,0 +1,107 @@
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">Account Details</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-list class="address-form">
+    <form id="addressForm" (ngSubmit)="setDeliveryAddress()">
+    <ion-item-group lines="none">
+      <ion-item-divider>
+        <ion-label> Billing address </ion-label>
+        <ion-button *ngIf="billing_address_1" (click)="keep_billing_address = true" size="small" color="d2dblue" slot="end">Keep Billing</ion-button>
+      </ion-item-divider>
+      <ion-item lines="none">
+        <ion-grid class="delivery-address-form">
+          <ion-row>
+            <ion-col>
+              <ion-label>
+                <p>Set a billing address for your order</p>
+              </ion-label>
+            </ion-col>
+            <ion-col>
+              <ion-item lines="full">
+                <ion-input required label="Billing Address 1*" labelPlacement="floating" [(ngModel)]="billing_address_1" [ngModelOptions]="{standalone: true}" type="text" [placeholder]="billing_address_1"></ion-input>
+            </ion-item>
+            </ion-col>
+            </ion-row>
+            <ion-row>
+            <ion-col>
+              <ion-item lines="full">
+                <ion-input required label="Billing Address 2" labelPlacement="floating" [(ngModel)]="billing_address_2" [ngModelOptions]="{standalone: true}" type="text" [placeholder]="billing_address_2"></ion-input>
+              </ion-item>
+              <ion-item lines="full">
+                <ion-input required label="Company" labelPlacement="floating" [(ngModel)]="billing_company" [ngModelOptions]="{standalone: true}" type="text" [placeholder]="billing_company"></ion-input>
+              </ion-item>
+              <ion-item lines="full">
+                <ion-input [style]="valid_phone" required label="Phone (868)*" labelPlacement="floating" [(ngModel)]="billing_phone" [ngModelOptions]="{standalone: true}" (ionInput)="validatePhoneNumber($event)" type="text" [placeholder]="billing_phone"></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item lines="full">
+                <ion-select required [(ngModel)]="billing_state" (ionChange)="billingCitySelections($event)" [ngModelOptions]="{standalone: true}" label="State" placeholder="Municipality*">
+                  <ion-select-option color="d2dblue" *ngFor="let billing_state of location_listing" [value]="billing_state.state">{{billing_state.state}}</ion-select-option>
+                </ion-select>
+            </ion-item>
+            </ion-col>
+            <ion-col>
+              <ion-item lines="none">
+                <ion-select required [(ngModel)]="billing_city" [ngModelOptions]="{standalone: true}" label="City*" [placeholder]="billing_city">
+                  <ion-select-option *ngFor="let billing_city of billing_city_locations" [value]="billing_city">{{billing_city}}</ion-select-option>
+                </ion-select>
+            </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+    </ion-item>
+      <ion-button style="clear: both;" (click)="populateDeliveryAddress()" color="d2dgreen" expand="block" fill="solid" [disabled]="!billing_address_1 || !billing_phone || valid_phone !== '' || !billing_state || !billing_city">Same as delivery address</ion-button>
+
+    </ion-item-group>
+    <ion-item-group class="ion-margin-top" lines="none">
+      <ion-item-divider>
+        <ion-label> Delivery address </ion-label>
+      </ion-item-divider>
+      <ion-item lines="none" style="background: none;">
+        <ion-grid class="delivery-address-form">
+          <ion-row>
+            <ion-col>
+              <ion-label>
+                <p>Your order requires a delivery address</p>
+              </ion-label>
+              <ion-item lines="full">
+                <ion-input [disabled]="delivery_use_billing" required label="Delivery Address 1*" labelPlacement="floating" [(ngModel)]="delivery_address_1" [ngModelOptions]="{standalone: true}"  type="text" [placeholder]="delivery_address_1"></ion-input>
+            </ion-item>
+            </ion-col>
+            </ion-row>
+            <ion-row>
+            <ion-col>
+              <ion-item lines="full">
+                <ion-input [disabled]="delivery_use_billing" required label="Delivery Address 2" labelPlacement="floating" [(ngModel)]="delivery_address_2" [ngModelOptions]="{standalone: true}"  type="text" [placeholder]="delivery_address_2"></ion-input>
+            </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-item lines="full">
+                <ion-select [disabled]="delivery_use_billing" required [(ngModel)]="delivery_state" (ionChange)="deliveryCitySelections($event)" [ngModelOptions]="{standalone: true}" label="State" placeholder="Municipality*">
+                  <ion-select-option color="d2dblue" *ngFor="let delivery_state of location_listing" [value]="delivery_state.state">{{delivery_state.state}}</ion-select-option>
+                </ion-select>
+            </ion-item>
+            </ion-col>
+            <ion-col>
+              <ion-item lines="none">
+                <ion-select [disabled]="delivery_use_billing" required [(ngModel)]="delivery_city" [ngModelOptions]="{standalone: true}" label="City*" [placeholder]="delivery_city">
+                  <ion-select-option *ngFor="let delivery_city of delivery_city_locations" [value]="delivery_city">{{delivery_city}}</ion-select-option>
+                </ion-select>
+            </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+    </ion-item>
+    <ion-button style="clear: both;" type="submit" color="d2dblue" expand="block" fill="solid" form="addressForm" [disabled]="!delivery_address_1 || !delivery_state || !delivery_city || !keep_billing_address">Update</ion-button>
+    </ion-item-group>
+    </form>
+  </ion-list>
+</ion-content>

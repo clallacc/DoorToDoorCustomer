@@ -1,0 +1,316 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="d2dblue">
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="start">
+      <!-- <ion-button (click)="goBack()"><ion-icon color="light" name="chevron-back"></ion-icon></ion-button> -->
+      <ion-back-button text="" defaultHref="/"></ion-back-button>
+   </ion-buttons>
+    <ion-title class="ion-text-center" size="small"><img height="40" src="../../assets/doortodoorlogolight.png" /></ion-title>
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="end">
+      <ion-button [routerLink]="['/tabs/cart']">
+        <ion-icon color="light" name="cart"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="end">
+      <ion-button [routerLink]="['/tabs/account']">
+        <ion-icon color="light" name="person"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-searchbar [style]="android_search_bg" *ngIf="deviceOs === 'android'" color="light" (click)="previousSearch()" (ionInput)="searchProduct($event)" animated="true" placeholder="Search Door to Door">
+  </ion-searchbar>
+  <ion-content *ngIf="deviceOs === 'android' && searchActive" [fullscreen]="true">
+  <div class="search">
+    <ion-list>
+       <!-- Search tags -->
+       <ion-item *ngIf="search_tags?.length > 0" class="search-tag-item" color="d2dorange">
+        <div class="search-tags">
+          <div class="content">
+            <h6>Suggestion | </h6>
+          <span *ngFor="let tags of search_tags" (click)="searchProductsByTags(tags.id)">{{tags.name}} <ion-icon name="chevron-forward"></ion-icon></span>
+          </div>
+        </div>
+      </ion-item>
+      <!-- Search tags -->
+        <!-- Search History slider viewed -->
+        <swiper-container *ngIf="previous_search?.length >= 3" slides-per-view="3" [modules]="searchHistorySwiperModules" autoplay="true">
+          <swiper-slide *ngFor="let prevSearch of previous_search" [loop]="true">
+            <ion-card [routerLink]="['/tabs/productdetail/', prevSearch.id]" class="search-history">
+              <ion-card-header>
+                <img [src]="imageURL(prevSearch.images[0])" />
+                <ion-card-title [innerHTML]="prevSearch.name"></ion-card-title>
+                <ion-card-subtitle [innerHTML]="prevSearch.sku"></ion-card-subtitle>
+              </ion-card-header>
+              </ion-card>
+          </swiper-slide>
+        </swiper-container>
+        <!-- Search History slider viewed -->
+      <!-- Search tags Progress -->
+      <ion-progress-bar *ngIf="search_tag_progress" color="d2dgreen" type="indeterminate"></ion-progress-bar>
+      <!-- Search tags Progress -->
+      <ion-item color="light" *ngFor="let search of productsSearch" button>
+        <ion-label class="ion-text-wrap">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="8">
+                <h2 (click)="searchNavigate(search.id)" [innerHTML]="search.name">
+                </h2>
+                <h3>
+                  ${{search.price}}
+                </h3>
+                <span class="product-quick-links">
+                  <ion-button (click)="updateCart(search.id, search, imageURL(search.images[0]), '1')" fill="clear"><ion-icon color="d2dblue" name="cart"></ion-icon></ion-button>
+                  <ion-button (click)="addToShoppingList(search.id, search, imageURL(search.images[0]), '1')" fill="clear"><ion-icon color="d2dgreen" name="heart"></ion-icon></ion-button>
+                  <ion-button (click)="shareProduct(search.name, search.permalink)" fill="clear"><ion-icon color="d2dblue" name="share"></ion-icon></ion-button>
+                </span>
+              </ion-col>
+              <ion-col (click)="searchNavigate(search.id)" size="4">
+                <ion-thumbnail class="product-image">
+                  <img [src]="imageURL(search.images[0])" />
+                </ion-thumbnail>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-label>
+      </ion-item>
+      <ion-item class="search-end ion-text-center" *ngIf="activeSearchPage > totalPages" lines="none"><p>END OF SEARCH RESULTS</p></ion-item>
+    </ion-list>
+    <ion-infinite-scroll threshold="95%" (ionInfinite)="searchIonInfinite($event)">
+      <ion-infinite-scroll-content loadingSpinner="bubbles"></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </div>
+</ion-content>
+</ion-header>
+
+<ion-content color="d2dblue" [fullscreen]="true" [scrollEvents]="true" (ionScroll)="onSearchScroll($event)">
+  <ion-header class="ios-header" collapse="condense">
+    <ion-toolbar color="d2dblue">
+      <ion-buttons slot="start">
+        <ion-back-button text="" defaultHref="/"></ion-back-button>
+        <!-- <ion-button (click)="goBack()"><ion-icon color="light" name="chevron-back"></ion-icon></ion-button> -->
+     </ion-buttons>
+      <ion-title *ngIf="!showTitleSearchBar" class="ion-text-center" size="large">
+        <img height="40" src="../../assets/doortodoorlogolight.png" />
+      </ion-title>
+      <!-- Floating search -->
+      <div *ngIf="showTitleSearchBar" class="floating-search">
+        <ion-searchbar color="light" [value]="searchTerm.detail.value" (click)="previousSearch()" (ionInput)="searchProduct($event)" animated="true" placeholder="Search Door to Door" size="small"></ion-searchbar>
+      </div>
+    <!-- Floating search -->
+      <ion-buttons slot="end">
+        <ion-button [routerLink]="['/tabs/cart']">
+          <ion-icon color="light" name="cart"></ion-icon>
+        </ion-button>
+        <ion-button [routerLink]="['/tabs/account']">
+          <ion-icon color="light" name="person"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-searchbar color="light" (click)="previousSearch()" (ionInput)="searchProduct($event)" animated="true" placeholder="Search Door to Door"></ion-searchbar>
+    <div class="search" *ngIf="searchActive">
+      <ion-list>
+        <!-- Search tags -->
+        <ion-item *ngIf="search_tags?.length > 0" class="search-tag-item" color="d2dorange">
+          <div class="search-tags">
+            <div class="content">
+              <h6>Suggestion | </h6>
+            <span *ngFor="let tags of search_tags" (click)="searchProductsByTags(tags.id)">{{tags.name}} <ion-icon name="chevron-forward"></ion-icon></span>
+            </div>
+          </div>
+        </ion-item>
+        <!-- Search tags -->
+        <!-- Search History slider viewed -->
+        <swiper-container *ngIf="previous_search?.length >= 3" slides-per-view="3" [modules]="searchHistorySwiperModules" autoplay="true">
+          <swiper-slide *ngFor="let prevSearch of previous_search" [loop]="true">
+            <ion-card [routerLink]="['/tabs/productdetail/', prevSearch.id]" class="search-history">
+              <ion-card-header>
+                <img [src]="imageURL(prevSearch.images[0])" />
+                <ion-card-title [innerHTML]="prevSearch.name"></ion-card-title>
+                <ion-card-subtitle [innerHTML]="prevSearch.sku"></ion-card-subtitle>
+              </ion-card-header>
+              </ion-card>
+          </swiper-slide>
+        </swiper-container>
+        <!-- Search History slider viewed -->
+        <!-- Search tags Progress -->
+        <ion-progress-bar *ngIf="search_tag_progress" color="d2dgreen" type="indeterminate"></ion-progress-bar>
+        <!-- Search tags Progress -->
+        <ion-item color="light" *ngFor="let search of productsSearch" button>
+          <ion-label class="ion-text-wrap">
+            <ion-grid>
+              <ion-row>
+                <ion-col size="8">
+                  <h2 (click)="searchNavigate(search.id)" [innerHTML]="search.name">
+                  </h2>
+                  <h3>
+                    ${{search.price}}
+                  </h3>
+                  <span class="product-quick-links">
+                    <ion-button (click)="updateCart(search.id, search, imageURL(search.images[0]), '1')" fill="clear"><ion-icon color="d2dblue" name="cart"></ion-icon></ion-button>
+                    <ion-button (click)="addToShoppingList(search.id, search, imageURL(search.images[0]), '1')" fill="clear"><ion-icon color="d2dgreen" name="heart"></ion-icon></ion-button>
+                    <ion-button (click)="shareProduct(search.name, search.permalink)" fill="clear"><ion-icon color="d2dblue" name="share"></ion-icon></ion-button>
+                  </span>
+                </ion-col>
+                <ion-col (click)="searchNavigate(search.id)" size="4">
+                  <ion-thumbnail class="product-image">
+                    <img [src]="imageURL(search.images[0])" />
+                  </ion-thumbnail>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-label>
+        </ion-item>
+        <ion-item class="search-end ion-text-center" *ngIf="activeSearchPage > totalPages" lines="none"><p>END OF SEARCH RESULTS</p></ion-item>
+      </ion-list>
+      <ion-infinite-scroll threshold="95%" (ionInfinite)="searchIonInfinite($event)">
+        <ion-infinite-scroll-content loadingSpinner="bubbles"></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </div>
+  </ion-header>
+
+  <div *ngIf="!searchActive" class="main-content-div">
+    <ion-list>
+      <ion-item color="light" lines="none">
+        <h2 [innerHTML]="name"></h2>
+        <span class="sku-span">{{sku}}</span>
+      </ion-item>
+      <ion-item color="light" class="image-item" lines="none">
+        <span class="stock-status"><p>{{stock_status}}</p></span>
+        <img [src]="imageURL(images)"/>
+      </ion-item>
+      <ion-item color="light" lines="full">
+        <div class="category-span" *ngFor="let category of categories">
+          <span [innerHTML]="category.name"></span> <ion-icon name="chevron-forward"></ion-icon>
+        </div>
+      </ion-item>
+      <ion-item color="light" class="price ion-margin-bottom" lines="none">
+        <h3 class="pricebutton" slot="start" [innerHTML]="price_html"></h3>
+        <ion-button (click)="addToShoppingList(id, product, imageURL(product.images[0]), cartQuantity)" slot="end" fill="clear"><ion-icon color="d2dgreen" name="heart"></ion-icon></ion-button>
+        <ion-badge slot="end"><ion-chip color="d2dblue" (click)="quantityDown()">-</ion-chip> {{cartQuantity}} <ion-chip color="d2dblue" (click)="quantityUp()">+</ion-chip> </ion-badge>
+      </ion-item>
+      <!-- Under Price -->
+      <ion-item *ngIf="on_sale" color="light" lines="none">
+        <small class="saving-span">Save: 
+          <span><b>{{calculateSavings(regular_price, price, cartQuantity)}}</b></span> 
+          | Regular price: <span style="text-decoration: line-through;">{{regular_price}}</span>
+        </small>
+        <ion-badge *ngIf="product.on_sale" color="d2dorange" slot="end">onsale</ion-badge>
+      </ion-item>
+      <ion-item><p>Sold recently: {{total_sales}}</p>
+        <ion-badge color="light" slot="end">
+        <ion-icon name="star-outline"></ion-icon>
+        <ion-icon name="star-outline"></ion-icon>
+        <ion-icon name="star-outline"></ion-icon>
+        <ion-icon name="star-outline"></ion-icon>
+        <ion-icon name="star-outline"></ion-icon>
+      </ion-badge>
+    </ion-item>
+      <!-- Under Price -->
+      <ion-item color="light" lines="none">
+        <ion-icon class="ion-margin-end" name="car" size="small"></ion-icon>
+        <small>FREE scheduled delivery with a Prime Membership.</small>
+      </ion-item>
+      <!-- Ratings/description here -->
+      <ion-item color="light" lines="full">
+        <ion-segment swipeGesture="true" value="default" [(ngModel)]="detailType">
+          <ion-segment-button value="description">
+            <ion-label>Description</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="review">
+            <ion-label>Reviews</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </ion-item>
+      <div class="product-description ion-padding" *ngIf="detailType === 'description'">
+        <div>
+          <ion-item><p><b>Product Description</b></p></ion-item>
+          <ion-item lines="none"><p><small>We prioritize quality, ensuring that each product meets the highest standards. 
+            Our skilled pickers always choose the best quality items.</small></p></ion-item>
+            <ion-item *ngIf="description" lines="none">
+              <div [innerHTML]="description"></div>
+            </ion-item>
+        </div>
+      </div>
+      <div class="product-description review-div ion-padding" *ngIf="detailType === 'review'">
+        <ion-item>
+          <p><b>Product Review</b></p>
+          <ion-button (click)="createReviewClicked()" fill="outline" shape="round" class="write-review-btn" size="small" slot="end">Write a review</ion-button>
+        </ion-item>
+        <ion-card *ngIf="this.reviewFormActive">
+          <form>
+            <ion-list [inset]="true">
+              <div class="ion-text-center">
+                <p>Select a rating</p>
+                <ion-badge class="rating-badge" color="light" size="large" slot="start">
+                  <ion-icon (click)="ratingSelect(1)" class="ion-margin-end" name="star"></ion-icon>
+                  <ion-icon (click)="ratingSelect(2)" class="ion-margin-end" [name]="rateStarSelect02"></ion-icon>
+                  <ion-icon (click)="ratingSelect(3)" class="ion-margin-end" [name]="rateStarSelect03"></ion-icon>
+                  <ion-icon (click)="ratingSelect(4)" class="ion-margin-end" [name]="rateStarSelect04"></ion-icon>
+                  <ion-icon (click)="ratingSelect(5)"  [name]="rateStarSelect05"></ion-icon>
+                </ion-badge>
+              </div>
+              <ion-item>
+                <ion-input (ionInput)="setNickname($event)" label="Nickname*" labelPlacement="floating"></ion-input>
+              </ion-item>
+              <ion-item lines="none">
+                <ion-textarea (ionInput)="setComment($event)" label="Comments" labelPlacement="floating" rows="5"></ion-textarea>
+              </ion-item>
+              <ion-item>
+                <ion-button (click)="reviewFormActive = false" fill="solid" color="dark" shape="small" class="write-review-btn" size="small" slot="start">Cancel</ion-button>
+                <ion-button (click)="submitReview()" fill="solid" color="d2dblue" shape="small" class="write-review-btn" size="small" slot="end">Submit</ion-button>
+              </ion-item>
+            </ion-list>
+          </form>
+        </ion-card>
+        <!-- HAS RATING -->
+        <div *ngIf="rating_count > 0">
+          <div *ngIf="productReviews">
+            <ion-card *ngFor="let reviews of productReviews">
+              <ion-item>
+                <ion-badge class="rating-badge" color="light" size="large" slot="start">
+                  <ion-icon class="ion-margin-end" [name="star"></ion-icon>
+                  <ion-icon class="ion-margin-end" [name]="rateStarSelect02"></ion-icon>
+                  <ion-icon class="ion-margin-end" [name]="rateStarSelect03"></ion-icon>
+                  <ion-icon class="ion-margin-end" [name]="rateStarSelect04"></ion-icon>
+                  <ion-icon [name]="rateStarSelect05"></ion-icon>
+                </ion-badge>
+                <p>This feature is not yet abailable</p>
+              </ion-item>
+            </ion-card>
+          </div>
+        </div>
+        <!-- HAS RATING -->
+        <div *ngIf="rating_count === 0">
+          <ion-item lines="none">
+            <p><small>There are no reviews for this product at this time. </small></p>
+          </ion-item>
+        </div>
+      </div>
+       <!-- Ratings/description here -->
+      <ion-item *ngIf="customerDetails.customer?.billing.address_1" color="light" lines="none">
+        <ion-icon class="ion-margin-end" name="bag-check" size="small"></ion-icon>
+          <small>Delivery to {{ customerDetails.customer.billing.address_1 }} {{ customerDetails.customer.billing.address_2 }}</small>
+      </ion-item>
+        <ion-button class="cartbtn" color="d2dorange" fill="solid" (click)="updateCart(id, product, imageURL(product.images[0]), cartQuantity)" expand="block" shape="round" slot="end">ADD TO CART</ion-button>
+      <ion-item color="light" class="ion-margin-top" *ngIf="relatedProducts?.length > 0" lines="none">
+        <ion-label>Related Products</ion-label>
+      </ion-item>
+      <!-- Related products slider viewed -->
+      <swiper-container *ngIf="relatedProducts?.length > 0" slides-per-view="3" [modules]="relatedSwiperModules" autoplay="true">
+        <swiper-slide *ngFor="let relproducts of relatedProducts" [loop]="true">
+          <ion-card [routerLink]="['/tabs/productdetail/', relproducts.id]" class="related-products-slider">
+            <ion-card-header>
+              <img [src]="imageURL(relproducts.images[0])" />
+              <ion-card-title>
+                $<span [innerHTML]="relproducts.price"></span>
+              </ion-card-title>
+              <ion-card-subtitle [innerHTML]="relproducts.sku"></ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content [innerHTML]="relproducts.name"></ion-card-content>
+            </ion-card>
+        </swiper-slide>
+      </swiper-container>
+      <!-- Related products slider viewed -->
+    </ion-list>
+  </div>
+
+</ion-content>

@@ -1,0 +1,228 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="d2dblue">
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="start">
+      <ion-back-button text="" defaultHref="/"></ion-back-button>
+      <!-- <ion-button (click)="goBack()"><ion-icon color="light" name="chevron-back"></ion-icon></ion-button> -->
+   </ion-buttons>
+    <ion-title class="ion-text-center" size="small"><img height="40" src="../../assets/doortodoorlogolight.png" /></ion-title>
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="end">
+      <ion-button [routerLink]="['/tabs/cart/']">
+        <ion-icon color="light" name="cart"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="end">
+      <ion-button>
+        <ion-icon color="light" name="person"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-searchbar [style]="android_search_bg" *ngIf="deviceOs === 'android'" color="light" (click)="previousSearch()" (ionInput)="searchProduct($event)" animated="true" placeholder="Search Door to Door">
+  </ion-searchbar>
+  <ion-content *ngIf="deviceOs === 'android' && searchActive" [fullscreen]="true">
+  <div class="search">
+    <ion-list>
+       <!-- Search tags -->
+       <ion-item *ngIf="search_tags?.length > 0" class="search-tag-item" color="d2dorange">
+        <div class="search-tags">
+          <div class="content">
+            <h6>Suggestion | </h6>
+          <span *ngFor="let tags of search_tags" (click)="searchProductsByTags(tags.id)">{{tags.name}} <ion-icon name="chevron-forward"></ion-icon></span>
+          </div>
+        </div>
+      </ion-item>
+      <!-- Search tags -->
+        <!-- Search History slider viewed -->
+        <swiper-container *ngIf="previous_search?.length >= 3" slides-per-view="3" [modules]="searchHistorySwiperModules" autoplay="true">
+          <swiper-slide *ngFor="let prevSearch of previous_search" [loop]="true">
+            <ion-card [routerLink]="['/tabs/productdetail/', prevSearch.id]" class="search-history">
+              <ion-card-header>
+                <img [src]="imageURL(prevSearch.images[0])" />
+                <ion-card-title [innerHTML]="prevSearch.name"></ion-card-title>
+                <ion-card-subtitle [innerHTML]="prevSearch.sku"></ion-card-subtitle>
+              </ion-card-header>
+              </ion-card>
+          </swiper-slide>
+        </swiper-container>
+        <!-- Search History slider viewed -->
+      <!-- Search tags Progress -->
+      <ion-progress-bar *ngIf="search_tag_progress" color="d2dgreen" type="indeterminate"></ion-progress-bar>
+      <!-- Search tags Progress -->
+      <ion-item color="light" *ngFor="let search of productsSearch" button>
+        <ion-label class="ion-text-wrap">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="8">
+                <h2 (click)="searchNavigate(search.id)" [innerHTML]="search.name">
+                </h2>
+                <h3>
+                  ${{search.price}}
+                </h3>
+                <span class="product-quick-links">
+                  <ion-button (click)="updateCart(search.id, search, imageURL(search.images[0]), '1')" fill="clear"><ion-icon color="d2dblue" name="cart"></ion-icon></ion-button>
+                  <ion-button (click)="addToShoppingList(search.id, search, imageURL(search.images[0]), '1')" fill="clear"><ion-icon color="d2dgreen" name="heart"></ion-icon></ion-button>
+                  <ion-button (click)="shareProduct(search.name, search.permalink)" fill="clear"><ion-icon color="d2dblue" name="share"></ion-icon></ion-button>
+                </span>
+              </ion-col>
+              <ion-col (click)="searchNavigate(search.id)" size="4">
+                <ion-thumbnail class="product-image">
+                  <img [src]="imageURL(search.images[0])" />
+                </ion-thumbnail>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-label>
+      </ion-item>
+      <ion-item class="search-end ion-text-center" *ngIf="activeSearchPage > totalPages" lines="none"><p>END OF SEARCH RESULTS</p></ion-item>
+    </ion-list>
+    <ion-infinite-scroll threshold="95%" (ionInfinite)="searchIonInfinite($event)">
+      <ion-infinite-scroll-content loadingSpinner="bubbles"></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </div>
+</ion-content>
+</ion-header>
+
+<ion-content color="d2dblue" [fullscreen]="true" [scrollEvents]="true" (ionScroll)="onSearchScroll($event)">
+  <ion-header class="ios-header" collapse="condense">
+    <ion-toolbar color="d2dblue">
+      <ion-buttons slot="start">
+        <ion-back-button text="" defaultHref="/"></ion-back-button>
+        <!-- <ion-button (click)="goBack()"><ion-icon color="light" name="chevron-back"></ion-icon></ion-button> -->
+     </ion-buttons>
+      <ion-title *ngIf="!showTitleSearchBar" class="ion-text-center" size="large">
+        <img height="40" src="../../assets/doortodoorlogolight.png" />
+      </ion-title>
+      <!-- Floating search -->
+      <div *ngIf="showTitleSearchBar" class="floating-search">
+        <ion-searchbar color="light" [value]="searchTerm.detail.value" (click)="previousSearch()" (ionInput)="searchProduct($event)" animated="true" placeholder="Search Door to Door" size="small"></ion-searchbar>
+      </div>
+    <!-- Floating search -->
+      <ion-buttons slot="end">
+        <ion-button [routerLink]="['/tabs/cart/']">
+          <ion-icon color="light" name="cart"></ion-icon>
+        </ion-button>
+        <ion-button>
+          <ion-icon color="light" name="person"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    <ion-searchbar color="light" (click)="previousSearch()" (ionInput)="searchProduct($event)" animated="true" placeholder="Search Door to Door"></ion-searchbar>
+    <div class="search" *ngIf="searchActive">
+      <ion-list>
+        <!-- Search tags -->
+        <ion-item *ngIf="search_tags?.length > 0" class="search-tag-item" color="d2dorange">
+          <div class="search-tags">
+            <div class="content">
+              <h6>Suggestion | </h6>
+            <span *ngFor="let tags of search_tags" (click)="searchProductsByTags(tags.id)">{{tags.name}} <ion-icon name="chevron-forward"></ion-icon></span>
+            </div>
+          </div>
+        </ion-item>
+        <!-- Search tags -->
+        <!-- Search History slider viewed -->
+        <swiper-container *ngIf="previous_search?.length >= 3" slides-per-view="3" [modules]="searchHistorySwiperModules" autoplay="true">
+          <swiper-slide *ngFor="let prevSearch of previous_search" [loop]="true">
+            <ion-card [routerLink]="['/tabs/productdetail/', prevSearch.id]" class="search-history">
+              <ion-card-header>
+                <img [src]="imageURL(prevSearch.images[0])" />
+                <ion-card-title [innerHTML]="prevSearch.name"></ion-card-title>
+                <ion-card-subtitle [innerHTML]="prevSearch.sku"></ion-card-subtitle>
+              </ion-card-header>
+              </ion-card>
+          </swiper-slide>
+        </swiper-container>
+        <!-- Search History slider viewed -->
+        <!-- Search tags Progress -->
+        <ion-progress-bar *ngIf="search_tag_progress" color="d2dgreen" type="indeterminate"></ion-progress-bar>
+        <!-- Search tags Progress -->
+        <ion-item color="light" *ngFor="let search of productsSearch" button>
+          <ion-label class="ion-text-wrap">
+            <ion-grid>
+              <ion-row>
+                <ion-col size="8">
+                  <h2 (click)="searchNavigate(search.id)" [innerHTML]="search.name">
+                  </h2>
+                  <h3>
+                    ${{search.price}}
+                  </h3>
+                  <span class="product-quick-links">
+                    <ion-button (click)="updateCart(search.id, search, imageURL(search.images[0]), '1')" fill="clear"><ion-icon color="d2dblue" name="cart"></ion-icon></ion-button>
+                    <ion-button (click)="addToShoppingList(search.id, search, imageURL(search.images[0]), '1')" fill="clear"><ion-icon color="d2dgreen" name="heart"></ion-icon></ion-button>
+                    <ion-button (click)="shareProduct(search.name, search.permalink)" fill="clear"><ion-icon color="d2dblue" name="share"></ion-icon></ion-button>
+                  </span>
+                </ion-col>
+                <ion-col (click)="searchNavigate(search.id)" size="4">
+                  <ion-thumbnail class="product-image">
+                    <img [src]="imageURL(search.images[0])" />
+                  </ion-thumbnail>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-label>
+        </ion-item>
+        <ion-item class="search-end ion-text-center" *ngIf="activeSearchPage > totalPages" lines="none"><p>END OF SEARCH RESULTS</p></ion-item>
+      </ion-list>
+      <ion-infinite-scroll threshold="95%" (ionInfinite)="searchIonInfinite($event)">
+        <ion-infinite-scroll-content loadingSpinner="bubbles"></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </div>
+  </ion-header>
+
+  <div *ngIf="!searchActive" class="main-content-div">
+    <ion-list>
+       <!-- TOP SECTION -->
+    <ion-progress-bar *ngIf="!products" color="mainblue" type="indeterminate"></ion-progress-bar>
+    <swiper-container *ngIf="productCategories" slides-per-view="3" [modules]="categorySwiperModules" autoplay="true">
+      <swiper-slide *ngFor="let categories of productCategories" [loop]="true">
+        <div [routerLink]="['/tabs/products/', 'false', categories.id]" class="category-viewed">
+          <ion-thumbnail>
+            <img [alt]="categories.name" [src]="imageURL(categories.image)" />
+          </ion-thumbnail>
+          <ion-item color="light" lines="none">
+            <ion-label style="text-align: center;" lines="none" class="ion-text-nowrap">
+              <p [innerHTML]="categories.name"></p>
+            </ion-label>
+          </ion-item>
+        </div>
+      </swiper-slide>
+    </swiper-container>
+      <ion-item color="light" *ngIf="category_info && !featureSearch">
+        <ion-avatar>
+          <img [src]="imageURL(category_info?.image?.src)" />
+        </ion-avatar>
+        <h5>Shop <strong [innerHTML]="category_info.name"></strong></h5>
+      </ion-item>
+      <ion-item color="light" *ngIf="featureSearch">
+        <h5>Shop <strong>{{featureSearch}}</strong></h5>
+      </ion-item>
+      <ion-item color="light" *ngFor="let product of products" button>
+        <ion-label class="ion-text-wrap">
+          <ion-grid class="product-grid">
+            <ion-row>
+              <ion-col [routerLink]="['/tabs/productdetail/', product.id]" size="5">
+                <span class="product-image"><img [src]="imageURL(product.images[0])" /></span>
+              </ion-col>
+              <ion-col size="7">
+                <h2 [routerLink]="['/tabs/productdetail/', product.id]">
+                  {{product.name}}
+                </h2>
+                <span [routerLink]="['/tabs/productdetail/', product.id]" class="sale-span" *ngIf="product.on_sale">deal</span>
+                <h3 [routerLink]="['/tabs/productdetail/', product.id]">
+                  ${{product.price}}
+                </h3>
+                <span class="product-quick-links">
+                  <ion-button (click)="updateCart(product.id, product, product.images[0], '1')" fill="clear"><ion-icon color="d2dblue" name="cart"></ion-icon></ion-button>
+                  <ion-button (click)="addToShoppingList(product.id, product, product.images[0], '1')" fill="clear"><ion-icon color="d2dgreen" name="heart"></ion-icon></ion-button>
+                  <ion-button (click)="shareProduct(product.name, product.permalink)" fill="clear"><ion-icon color="d2dblue" name="share"></ion-icon></ion-button>
+                </span>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+    <ion-infinite-scroll (ionInfinite)="productIonInfinite($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </div>
+  
+</ion-content>

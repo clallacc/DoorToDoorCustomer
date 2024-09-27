@@ -1,0 +1,53 @@
+<ion-content color="light" [fullscreen]="true" class="ion-padding">
+  <!-- SIGN-IN DIV -->
+  <div *ngIf="page === 'signin'" class="form ion-padding">
+    <ion-avatar>
+      <img alt="User Profile Icon" src="/assets/userblue.svg" />
+    </ion-avatar>
+    <h6>Sign In to your account</h6>
+  <ion-list>
+    <form id="loginForm" (ngSubmit)="LoginUser()">
+    <ion-item>
+        <ion-input required [(ngModel)]="username" [ngModelOptions]="{standalone: true}"  type="email" placeholder="Username/Email"></ion-input>
+    </ion-item>
+    <ion-item>
+        <ion-input required [(ngModel)]="password" [ngModelOptions]="{standalone: true}"  type="password" placeholder="Password"></ion-input>
+    </ion-item>
+  </form>
+  </ion-list>
+  <div class="signin-div">
+    <ion-button type="submit" color="d2dblue" expand="block" fill="solid" form="loginForm" [disabled]="!username || !password">Sign In</ion-button>
+    <ion-button fill="outline" (click)="toggleSigninRegister()" size="small" color="d2dgreen">Register</ion-button>
+  </div>
+  </div>
+   <!-- RIGISTER DIV -->
+   <div *ngIf="page === 'register'" class="form ion-padding">
+    <ion-avatar>
+      <img alt="User Profile Icon" src="/assets/userblue.svg" />
+    </ion-avatar>
+    <h6>Register an account</h6>
+  <ion-list>
+    <form id="registerForm" (ngSubmit)="RegisterUser()">
+      <ion-item>
+        <ion-input required [(ngModel)]="firstname" [ngModelOptions]="{standalone: true}"  type="text" placeholder="First Name*"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input required [(ngModel)]="lastname" [ngModelOptions]="{standalone: true}"  type="text" placeholder="Last Name*"></ion-input>
+  </ion-item>
+    <ion-item>
+        <ion-input required [(ngModel)]="username" [ngModelOptions]="{standalone: true}"  type="text" placeholder="Username*"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input required [(ngModel)]="email" [ngModelOptions]="{standalone: true}"  type="email" placeholder="Email*"></ion-input>
+  </ion-item>
+    <ion-item>
+        <ion-input required [(ngModel)]="password" [ngModelOptions]="{standalone: true}"  type="password" placeholder="Password*"></ion-input>
+    </ion-item>
+  </form>
+  </ion-list>
+  <div class="signin-div">
+    <ion-button type="submit" color="d2dblue" expand="block" fill="solid" form="registerForm" [disabled]="!firstname || !lastname || !username || !email || !password">Register</ion-button>
+    <ion-button fill="outline" (click)="toggleSigninRegister()" size="small" color="d2dgreen">Sign In</ion-button>
+  </div>
+  </div>
+</ion-content>
