@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>44553428234-75tbj3g732kt8pqijenb3hkv3gtlqhn1.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.44553428234-75tbj3g732kt8pqijenb3hkv3gtlqhn1</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>44553428234-1pqnvesl28b8jcnugd7r36q943ovvbcq.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCR4eiy5WOt_JlIjCV-Fm4gkmWTNhtHTU4</string>
+	<key>GCM_SENDER_ID</key>
+	<string>44553428234</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.gillettegroup.doortodoor</string>
+	<key>PROJECT_ID</key>
+	<string>door-to-door-tt</string>
+	<key>STORAGE_BUCKET</key>
+	<string>door-to-door-tt.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:44553428234:ios:3045d05d2ff969e063aef3</string>
+</dict>
+</plist>

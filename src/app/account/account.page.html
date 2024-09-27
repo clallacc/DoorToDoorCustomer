@@ -1,0 +1,125 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="d2dblue">
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="start">
+      <ion-back-button text="" defaultHref="/"></ion-back-button>
+      <!-- <ion-button (click)="goBack()"><ion-icon color="light" name="chevron-back"></ion-icon></ion-button> -->
+   </ion-buttons>
+    <ion-title class="ion-text-center" size="small"><img height="40" src="../../assets/doortodoorlogolight.png" /></ion-title>
+    <ion-buttons *ngIf="deviceOs === 'android'" slot="end">
+      <ion-button [routerLink]="['/tabs/cart']">
+        <ion-icon color="light" name="cart"></ion-icon>
+      </ion-button>
+      <ion-button (click)="openSignup('signin')">
+        <ion-icon color="light" name="person"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="d2dblue" [fullscreen]="true">
+  <ion-header class="ios-header" collapse="condense">
+    <ion-toolbar color="d2dblue">
+      <ion-buttons slot="start">
+        <ion-back-button text="" defaultHref="/"></ion-back-button>
+        <!-- <ion-button (click)="goBack()"><ion-icon color="light" name="chevron-back"></ion-icon></ion-button> -->
+     </ion-buttons>
+      <ion-title class="ion-text-center" size="large"><img height="40" src="../../assets/doortodoorlogolight.png" /></ion-title>
+      <ion-buttons slot="end">
+        <ion-button [routerLink]="['/tabs/cart']">
+          <ion-icon color="light" name="cart"></ion-icon>
+        </ion-button>
+        <ion-button (click)="openSignup('signin')">
+          <ion-icon color="light" name="person"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+    
+  </ion-header>
+
+  <div class="main-content-div">
+      <ion-list>
+        <ion-grid>
+          <ion-row>
+            <ion-col size="6">
+              <ion-button [disabled]="!disabled"  expand="block" size="small" (click)="openSignup('signin')" color="d2dblue" fill="outline" shape="round">Sign in</ion-button>
+            </ion-col>
+            <ion-col size="6">
+              <ion-button [disabled]="!disabled"  expand="block" size="small" (click)="openSignup('register')" color="d2dblue" fill="outline" shape="round">Register</ion-button>
+            </ion-col>
+          </ion-row>
+          <h2 *ngIf="!disabled" class="loggedin-h2" (click)="signOut()">{{userData?.displayName}} <span>Sign Out</span></h2>
+          <h2 *ngIf="disabled">Guest</h2>
+          <ion-row class="user-menu">
+            <ion-col size="6">
+              <ion-button (click)="retrieveOrders()" [disabled]="disabled" color="d2dgreen" shape="rounded" expand="block">
+                <ion-icon class="ion-padding-end" slot="start" src="/assets/griceryorders.svg"></ion-icon>
+                <small>Orders</small>
+            </ion-button>
+          </ion-col>
+            <ion-col size="6">
+              <ion-button [disabled]="disabled" (click)="storedCCPaymentMethod(false)" color="d2dgreen" shape="rounded" expand="block">
+                <ion-icon class="ion-padding-end" slot="start" src="/assets/storedcards.svg"></ion-icon>
+              <small>Stored Cards</small>
+            </ion-button>
+          </ion-col>
+          </ion-row>
+          <ion-row class="user-menu">
+            <ion-col size="6">
+              <ion-button (click)="openRecipes()" [disabled]="disabled" color="d2dgreen" shape="rounded" expand="block">
+                <ion-icon class="ion-padding-end" slot="start" src="/assets/mapaddress.svg"></ion-icon>
+                <small>Recipes</small>
+              </ion-button>
+            </ion-col>
+            <ion-col size="6">
+              <ion-button (click)="retrieveCustomerDetails()" [disabled]="disabled" color="d2dgreen" shape="rounded" expand="block">
+                <ion-icon class="ion-padding-end" slot="start" src="/assets/avatar.svg"></ion-icon>
+                <small>Account Details</small>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+          <ion-item class="loading-spinner" *ngIf="!categories">
+            <ion-spinner name="circles"></ion-spinner>
+          </ion-item>
+          <ion-row *ngIf="categories">
+            <ion-col size="12">
+              <ion-accordion-group expand="inset">
+                <ion-accordion *ngFor="let category of categories" (click)="this.loadSubCategories(category.id);" [value]="category.slug">
+                  <ion-item class="category-list" slot="header" color="d2dblue">
+                    <ion-thumbnail class="product-image">
+                      <img [src]="imageURL(category.image)" />
+                    </ion-thumbnail>
+                    <ion-label><p [innerHTML]="category.name"></p></ion-label>
+                  </ion-item>
+                  <div class="ion-padding sub-category-container" slot="content">
+                    <ion-spinner *ngIf="!sub_categories" name="dots"></ion-spinner>
+                    <ion-grid class="sub-category">
+                      <ion-row>
+                        <ion-col size="6" *ngFor="let subcategory of sub_categories">
+                          <ion-thumbnail (click)="navigateCategory(subcategory.id)" class="product-image">
+                            <img [src]="imageURL(subcategory.image)" />
+                          </ion-thumbnail>
+                          <p [innerHTML]="subcategory.name"></p>
+                        </ion-col>
+                      </ion-row>
+                    </ion-grid>
+                  </div>
+                </ion-accordion>
+              </ion-accordion-group>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="12">
+              <ion-item color="light">
+                <p style="font-size: 10px;">
+                  Your personal data will be used to support your experience throughout this app, to manage access to your account, and for other purposes described in our <a href="https://shop.doortodoortt.com/west/privacy-policy/">privacy policy.</a>
+                </p>
+              </ion-item>
+              <ion-item>
+                <ion-button style="font-size: 10px;" (click)="removeUser()" [disabled]="disabled" color="d2d" fill="clear" slot="end">Logout / Remove Data</ion-button>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-list>
+  </div>
+</ion-content>

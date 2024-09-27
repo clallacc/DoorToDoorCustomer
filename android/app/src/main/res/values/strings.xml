@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Door To Door Shopping</string>
+    <string name="title_activity_main">Door To Door Shopping</string>
+    <string name="package_name">com.gillettegroup.doortodoor</string>
+    <string name="custom_url_scheme">com.gillettegroup.doortodoor</string>
+</resources>

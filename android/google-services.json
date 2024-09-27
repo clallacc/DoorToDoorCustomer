@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "44553428234",
+    "project_id": "door-to-door-tt",
+    "storage_bucket": "door-to-door-tt.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44553428234:android:df9855e343edbd7363aef3",
+        "android_client_info": {
+          "package_name": "com.doortodoortt.shop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "44553428234-1pqnvesl28b8jcnugd7r36q943ovvbcq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.doortodoortt.shop",
+            "certificate_hash": "7f24bf27ba3653bceeaa2eb9ccde44b2612b0def"
+          }
+        },
+        {
+          "client_id": "44553428234-pkhjoagqqrdnq05in1ve5rttm0fd2dil.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEx8irZ102QODpTEgMuoZLP_WySiAC4hM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "44553428234-pkhjoagqqrdnq05in1ve5rttm0fd2dil.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "44553428234-75tbj3g732kt8pqijenb3hkv3gtlqhn1.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.gillettegroup.doortodoor",
+                "app_store_id": "1573287484"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
