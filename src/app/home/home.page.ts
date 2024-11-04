@@ -64,6 +64,7 @@ export class HomePage {
   android_search_bg: any;
   feature_banner_placement: any;
   showTitleSearchBar = false;
+  deviceId = '';
 
   @ViewChild('scrollableDiv') scrollableDiv!: ElementRef;
 
@@ -507,6 +508,8 @@ export class HomePage {
         initialBreakpoint: 0.6,
       });
       modal.present();
+    } else if (notification_payload.notification.data?.route) {
+      this.router.navigate([notification_payload.notification.data?.route]);
     } else {
       this.util.presentAlertToast(
         notification_payload.body,
@@ -531,13 +534,14 @@ export class HomePage {
 
     // On success, we should be able to receive notifications
     PushNotifications.addListener('registration', (token: Token) => {
-      if (!this.dataservice.global_auth.pushToken) {
+      if (token !== this.dataservice.global_auth.pushToken) {
         this.dataservice.global_auth.pushToken = token.value;
         this.dataservice.doSaveUser(
           JSON.stringify(this.dataservice.global_auth)
         );
       }
       console.log('Push registration success, token: ' + token.value);
+      this.deviceId = token.value;
     });
 
     // Some issue with our setup and push will not work
@@ -578,6 +582,6 @@ export class HomePage {
   ngOnInit() {
     this.setupPageData();
     this.pushNotifications();
-    this.util.swipeToGoBack();
+    // this.util.swipeToGoBack();
   }
 }

@@ -3,6 +3,14 @@ import { CapacitorHttp, HttpOptions } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 import axios from 'axios';
 import { environment } from 'src/environments/environment';
+import {
+  getFirestore,
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+} from 'firebase/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +33,9 @@ export class DataService {
   global_auth: any = [];
   global_OS: any = [];
   global_server: any = false;
+  global_firestore_campaigns: any = [];
+
+  private db = getFirestore();
 
   constructor() {}
 
@@ -205,6 +216,7 @@ export class DataService {
       headers: {
         'Content-type': 'application/json',
         Accept: 'application/json',
+        Authorization: `Basic ${btoa(`${this.app_name}:${this.app_pw}`)}`,
       },
       params: {
         consumer_key: this.customer_key,
@@ -392,7 +404,7 @@ export class DataService {
       headers: {
         'Content-type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
+        // Authorization: `Bearer ${token}`,
       },
       params: {
         consumer_key: this.customer_key,
@@ -878,5 +890,65 @@ export class DataService {
 
   async doGetRecentViewed() {
     return await Preferences.get({ key: 'd2d_recent_viewed' });
+  }
+
+  async doStoreScheduleData(data: any) {
+    await Preferences.set({
+      key: 'd2d_schedule_Data',
+      value: data,
+    });
+  }
+
+  async doGetStoredScheduleData() {
+    return await Preferences.get({ key: 'd2d_schedule_Data' });
+  }
+
+  // Method to add data to Firestore
+  async addForestoreNotification(
+    collectionName: string,
+    data: any
+  ): Promise<void> {
+    try {
+      const docRef = await addDoc(collection(this.db, collectionName), data);
+      console.log('Document written with ID: ', docRef.id);
+    } catch (e) {
+      console.error('Error adding document: ', e);
+    }
+  }
+
+  async updateFirestoreNotification(
+    docId: any,
+    updateTitle?: any,
+    updateBody?: any
+  ): Promise<void> {
+    const notificationDocRef = doc(
+      this.db,
+      'd2d-app-push-notifications',
+      docId
+    );
+    // Create an object to hold the fields to update
+    const updates: { title?: string; body?: string } = {};
+
+    if (updateTitle !== undefined && updateTitle !== '') {
+      updates.title = updateTitle; // Only add title if it's not empty
+    }
+
+    if (updateBody !== undefined && updateBody !== '') {
+      updates.body = updateBody; // Only add body if it's not empty
+    }
+
+    // Only call updateDoc if there's something to update
+    if (Object.keys(updates).length > 0) {
+      return await updateDoc(notificationDocRef, updates);
+    }
+  }
+
+  async removeFirestoreNotification(docId: any): Promise<void> {
+    const notificationDocRef = doc(
+      this.db,
+      'd2d-app-push-notifications',
+      docId
+    );
+    return await deleteDoc(notificationDocRef);
   }
 }

@@ -72,10 +72,33 @@
       <ion-row>
         <ion-col>
           <ion-item color="light">
-            <ion-input #couponCode (keyup.enter)="checkCoupon(couponCode.value)" [(ngModel)]="coupon_code" label="Apply Coupon" placeholder="Coupon code"></ion-input>
-            <small *ngIf="coupon_notice" style="color: crimson;">{{coupon_notice}}</small>
+            <ion-input #couponCode (keyup.enter)="checkCoupon(couponCode.value)" [(ngModel)]="coupon_code" label="Apply Coupon" [placeholder]="coupon_code ? coupon_code : 'Coupon code'"></ion-input>
+            <ion-popover [isOpen]="coupon_notice !== ''" (didDismiss)="coupon_notice = ''">
+              <ng-template>
+                <ion-content class="ion-padding">
+                  <small style="color: crimson;">{{coupon_notice}}</small>
+                </ion-content>
+              </ng-template>
+            </ion-popover>
             <ion-button *ngIf="coupon_code" (click)="cancelCoupon()" color="d2dblue" fill="clear" size="small"><ion-icon name="close-circle"></ion-icon></ion-button>
           </ion-item>
+          <ion-item *ngIf="coupon_code_array?.length > 0">
+            <div class="scrollable-coupons">
+              <span *ngFor="let codes of coupon_code_array">
+                <ion-button (click)="removeCouponFromList(codes.code)" color="d2dorange" fill="clear" size="small">
+                  <ion-icon name="close-circle"></ion-icon>
+                </ion-button> 
+                <small class="code-display">
+                  <span>{{codes.code}}</span>
+                  <span class="code-discount-display">
+                    <span *ngIf="codes.discount_type === 'percent'">-%</span>
+                    <span *ngIf="codes.discount_type === 'fixed_cart'">-$</span>{{codes.discount}}</span>
+                </small>
+              </span>
+            </div>
+          </ion-item>
+          
+          <ion-progress-bar *ngIf="coupon_loading" color="d2dorange" type="indeterminate"></ion-progress-bar>
         </ion-col>
       </ion-row>
       <ion-row>
@@ -167,7 +190,9 @@
         </ion-col>
         <ion-col size="4">
           <h4>{{total}}</h4>
-          <small class="coupon-small" *ngIf="coupon_code && coupon_discount">-<span *ngIf="coupon_type === 'percent'">%</span><span *ngIf="coupon_type === 'fixed_cart'">$</span>{{coupon_discount}} {{coupon_code}}</small>
+          <small class="coupon-small" *ngIf="coupon_code_array?.length > 0">
+            -{{displayTotalCouponDiscount(subtotal, total)}}
+          </small>
         </ion-col>
       </ion-row>
       <ion-row>
@@ -252,8 +277,8 @@
           <ion-item lines="full" class="payment-method-Item">
             <p slot="start">Payment Method:</p>
             <span class="ion-text-end" slot="end">
-              <p  style="line-height: 0px; margin: 0px;">{{paymentTitle}}</p>
-              <small class="ion-text-end">
+              <p style="line-height: 10px; margin: 0px;">{{paymentTitle}}</p>
+              <small  style="display: block; line-height: 10px;" class="ion-text-end">
                 {{paymentDescription}}
               </small>
             </span>
@@ -262,10 +287,10 @@
           <p slot="start">Card:</p>
           <p slot="end">{{card_number}}</p>
       </ion-item>
-      <ion-item lines="full" *ngIf="coupon_code && coupon_discount">
+      <ion-item lines="full" *ngIf="coupon_code_array?.length > 0">
         <p slot="start">Coupon:</p>
         <p slot="end"> 
-          <span *ngIf="coupon_type === 'percent'">%</span><span *ngIf="coupon_type === 'fixed_cart'">$</span>{{coupon_discount}} {{coupon_code}}
+          -{{displayTotalCouponDiscount(subtotal, total)}}
         </p>
       </ion-item>
       <ion-item lines="full" *ngIf="schedule_selected_date && schedule_selected_time">

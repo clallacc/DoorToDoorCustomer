@@ -34,7 +34,7 @@ export class CheckoutPage {
   revised_total: any = 0;
   default_delivery_fee: any;
   delivery: any = 50.0;
-  scheduling: any = 35.0;
+  scheduling: any = 0.0;
   totalitems: any = 0;
   default_payment: any;
   paymentId: any;
@@ -43,10 +43,11 @@ export class CheckoutPage {
   paymentDescription: string = '';
   customer: any;
   coupon_code: any;
+  coupon_code_array: any = [];
   coupon_discount: any;
   coupon_type: any;
   coupon_free_delivery = false;
-  coupon_notice: any;
+  coupon_notice: string = '';
   shipping_rates: any;
   shippingType: any;
   shippingTypeTitle: any;
@@ -73,6 +74,9 @@ export class CheckoutPage {
   orderDisabled = true;
   checkoutState = false;
   show_order_complete_notice = false;
+  coupon_loading = false;
+  individual_use_coupon_set: any;
+  totalCouponDiscount: any = 0;
 
   constructor(
     private dataservice: DataService,
@@ -111,8 +115,10 @@ export class CheckoutPage {
       this.formatCartItems();
       this.customer_isloggedin = true;
     }
-    if (this.coupon_code) {
-      this.checkCoupon(this.coupon_code);
+    if (this.coupon_code_array.length > 0) {
+      this.coupon_code_array.forEach((codes: any) => {
+        this.checkCoupon(codes.code);
+      });
     }
     if (this.dataservice.global_auth?.default_gateways_id) {
       this.selectPaymentSection(
@@ -252,6 +258,9 @@ export class CheckoutPage {
 
   async dateSelected(ev: any) {
     // Disavle previous days in datetime.
+    if (this.schedule_selected_time) {
+      this.schedule_selected_time = '';
+    }
     this.setupScheduleDateAndTime();
     let date: any;
     if (!ev.detail?.value) {
@@ -290,23 +299,26 @@ export class CheckoutPage {
     }
   }
 
-  setupScheduling() {
+  setupScheduling(schedule_fee: any) {
     if (!this.isprime && this.schedule_times_active) {
-      this.scheduling = 35.0;
+      this.scheduling = schedule_fee;
     } else {
       this.scheduling = 0.0;
     }
+    this.calculateTotal();
   }
 
   timeSelection(ev: any) {
     this.schedule_selected_time = ev.detail?.value;
     if (this.schedule_selected_time) {
       this.schedule_times_active = true;
+      this.setupScheduling(35.0);
     } else {
       this.schedule_times_active = false;
+      this.setupScheduling(0.0);
     }
-    this.setupScheduling();
-    this.calculateTotal();
+
+    this.calculateTotal(this.coupon_code_array);
     this.displayClearSceduleBtn();
   }
 
@@ -362,10 +374,11 @@ export class CheckoutPage {
   }
 
   async setupScheduleDateAndTime() {
-    this.dataservice.doGetScheduleData(this.customer.token).then((res: any) => {
+    this.dataservice.doGetStoredScheduleData().then((res: any) => {
       if (res) {
-        this.setupScheduleOffDays(res.data);
-        this.schedule_data = res.data[0];
+        const stored_schedule_data = JSON.parse(res.value);
+        this.setupScheduleOffDays(stored_schedule_data);
+        this.schedule_data = stored_schedule_data[0];
         this.schedule_times = Object.values(
           this.schedule_data?.delivery_times
         ).filter((value) => value !== '');
@@ -376,6 +389,7 @@ export class CheckoutPage {
   resetSchedule() {
     this.schedule_selected_time = '';
     this.clearScheduleActive = false;
+    this.setupScheduling(0.0);
   }
 
   setupScheduleOffDays(offdays: any) {
@@ -397,9 +411,12 @@ export class CheckoutPage {
       this.shippingTypeTitle = shipping_data.method_title;
       this.default_delivery_fee = shipping_data.settings.cost.value;
       this.delivery = this.default_delivery_fee;
-      this.setupScheduling();
       this.calculateSubTotal();
-      this.calculateTotal();
+      if (this.coupon_code_array?.length > 0) {
+        this.calculateTotal(this.coupon_code_array);
+      } else {
+        this.calculateTotal();
+      }
     });
 
     // set cart items for post
@@ -431,31 +448,50 @@ export class CheckoutPage {
     }
   }
 
-  calculateTotal(coupon?: any, coupon_type?: any) {
+  calculateTotal(coupon_code_array?: any) {
     this.total = 0;
     this.storeTotal = 0;
+
     if (this.cart) {
+      // Calculate the subtotal from cart items
       for (let cartItems of this.cart) {
         this.storeTotal += Number(cartItems.sub_total);
       }
-      if (coupon) {
-        if (coupon_type == 'percent') {
-          if (coupon > 0 && coupon <= 100) {
-            this.storeTotal =
-              this.storeTotal - this.storeTotal * (coupon / 100);
+
+      // Apply each coupon discount from the array
+      if (Array.isArray(coupon_code_array)) {
+        coupon_code_array.forEach((coupon: any) => {
+          const { discount, discount_type, free_shipping } = coupon;
+
+          if (discount) {
+            if (discount_type === 'percent') {
+              // Ensure the coupon discount is within valid range
+              if (discount > 0 && discount <= 100) {
+                this.storeTotal -= this.storeTotal * (discount / 100);
+              }
+            } else if (discount_type === 'fixed_cart') {
+              // Apply fixed dollar discount
+              this.storeTotal -= discount;
+            }
           }
-        } else {
-          this.storeTotal = Number(this.storeTotal - coupon);
-        }
+          if (free_shipping) {
+            this.delivery = 0.0;
+          }
+        });
       }
+
+      // Ensure storeTotal does not go below zero
+      this.storeTotal = Math.max(this.storeTotal, 0);
+
+      // Handle prime delivery charges
       if (this.isprime) {
         this.scheduling = 0.0;
         this.delivery = 0.0;
       } else {
-        this.storeTotal =
-          this.storeTotal + Number(this.scheduling) + Number(this.delivery);
+        this.storeTotal += Number(this.scheduling) + Number(this.delivery);
       }
 
+      // Format the total as currency
       this.total = this.storeTotal.toLocaleString('en-US', {
         style: 'currency',
         currency: 'USD',
@@ -463,97 +499,103 @@ export class CheckoutPage {
     }
   }
 
-  cancelCoupon() {
+  resetCoupon() {
     this.coupon_code = '';
-    this.checkCoupon(this.coupon_code);
+    this.coupon_notice = '';
+    this.coupon_discount = '';
+    this.coupon_type = '';
+  }
+
+  cancelCoupon() {
+    this.resetCoupon();
+    // this.checkCoupon(this.coupon_code);
+    // this.calculateTotal();
+    this.coupon_loading = false;
+  }
+
+  checkCouponUserByUser(data: { [key: number]: any }, value: any) {
+    return Object.values(data).filter((item) => item === value).length;
+  }
+
+  removeCouponFromList(coupon: any) {
+    this.coupon_code_array = this.coupon_code_array.filter(
+      (coupons: any) => coupons.code !== coupon
+    );
+
+    // remove free delivery
+    if (!this.coupon_code_array.free_delivery) {
+      this.delivery = this.default_delivery_fee;
+    }
+    this.calculateTotal(this.coupon_code_array);
+  }
+
+  checkCouponExistInArray(coupon_code: any) {
+    return this.coupon_code_array.some(
+      (set_coupon: any) => set_coupon.code === coupon_code
+    );
   }
 
   async checkCoupon(coupon: any) {
-    this.coupon_notice = '';
-    this.coupon_code = '';
-    this.coupon_discount = '';
-    this.coupon_type = '';
-    await this.dataservice
-      .doGetCoupon(coupon, this.dataservice.global_auth.token)
-      .then((data: any) => {
-        if (data.data) {
-          const coupon_data = data.data;
-          let woo_coupon = coupon_data.filter(
-            (code: any) => code.code === coupon && code.usage_count === 0
-          );
-          // set coupon free shipping option true/false
-          if (!this.isprime) {
-            if (coupon === coupon_data[0]?.code) {
-              this.coupon_free_delivery = coupon_data[0]?.free_shipping
-                ? coupon_data[0]?.free_shipping
-                : false;
-              if (this.coupon_free_delivery) {
-                this.delivery = 0.0;
-              }
+    this.coupon_loading = true;
+    if (!this.customer_isloggedin) {
+      this.loginRegister();
+    }
+    // Handle apply coupon
+    if (this.coupon_code) {
+      this.resetCoupon();
+    }
+    // Check it coupon exist
+    if (!this.checkCouponExistInArray(coupon)) {
+      await this.dataservice
+        .doGetCoupon(coupon, this.dataservice.global_auth.token)
+        .then((data: any) => {
+          if (data.data) {
+            const coupon_data = data.data;
+            const code_check = this.util.valudateCoupon(
+              coupon,
+              coupon_data,
+              this.subtotal,
+              this.isprime,
+              this.customer?.email,
+              this.coupon_code_array,
+              this.individual_use_coupon_set,
+              this.cart
+            );
+            // check coupon validation
+            if (!code_check.validity && coupon) {
+              this.coupon_notice = code_check.notice;
             } else {
-              this.delivery = this.default_delivery_fee;
-            }
-          }
+              // update delevery cost
+              if (code_check.free_delivery) {
+                this.delivery = code_check.free_delivery_cost;
+              }
 
-          // check usege count limit
-          if (
-            coupon_data[0]?.usage_count >= coupon_data[0]?.usage_limit_per_user
-          ) {
-            this.coupon_notice = `Coupon limit ${coupon_data[0]?.usage_limit_per_user} per user`;
-            return;
+              this.coupon_code = coupon;
+
+              // Add coupon to coupon array
+              if (!this.checkCouponExistInArray(this.coupon_code)) {
+                this.coupon_code_array.push({
+                  code: this.coupon_code,
+                  discount: code_check.discount_amount,
+                  discount_type: code_check.discount_type,
+                  free_shipping: code_check.free_delivery,
+                });
+                // reset Calculate total
+                this.calculateTotal(this.coupon_code_array);
+                // reset coupon
+                this.resetCoupon();
+              }
+
+              this.coupon_discount = code_check.discount_amount;
+              this.coupon_type = code_check.discount_type;
+            }
+            this.coupon_loading = false;
           }
-          const subtotal = this.subtotal.replace('$', '');
-          const rawSubtotal = subtotal.replace(',', '');
-          if (
-            coupon_data[0]?.minimum_amount !== '0.00' ||
-            coupon_data[0]?.maximum_amount !== '0.00'
-          ) {
-            // Calculate minimum spend
-            if (Number(rawSubtotal) >= coupon_data[0]?.minimum_amount) {
-              // Calculate coupon discount
-              this.calculateTotal(
-                woo_coupon[0]?.amount,
-                woo_coupon[0]?.discount_type
-              );
-              if (woo_coupon[0]?.code) {
-                this.coupon_code = woo_coupon[0]?.code;
-                this.coupon_discount = woo_coupon[0]?.amount;
-                this.coupon_type = woo_coupon[0]?.discount_type;
-              }
-            } else {
-              if (coupon == coupon_data[0]?.code && coupon_data?.length === 1) {
-                this.coupon_notice = `Minimum purchase $${coupon_data[0]?.minimum_amount}`;
-                return;
-              }
-            }
-            // calculate maximum spend
-            if (coupon_data[0]?.maximum_amount <= Number(rawSubtotal)) {
-              // Calculate coupon discount
-              this.calculateTotal(
-                woo_coupon[0]?.amount,
-                woo_coupon[0]?.discount_type
-              );
-              if (woo_coupon[0]?.code) {
-                this.coupon_code = woo_coupon[0]?.code;
-                this.coupon_discount = woo_coupon[0]?.amount;
-                this.coupon_type = woo_coupon[0]?.discount_type;
-              }
-            } else {
-              if (coupon == coupon_data[0]?.code && coupon_data?.length === 1) {
-                this.coupon_notice = `Maximum purchase $${coupon_data[0]?.maximum_amount}`;
-                return;
-              }
-            }
-          } else {
-            this.calculateTotal(woo_coupon[0]?.amount);
-            if (woo_coupon[0]?.code) {
-              this.coupon_code = woo_coupon[0]?.code;
-              this.coupon_discount = woo_coupon[0]?.amount;
-              this.coupon_type = woo_coupon[0]?.discount_type;
-            }
-          }
-        }
-      });
+        });
+    } else {
+      this.coupon_loading = false;
+      this.coupon_notice = `Coupon "${coupon}" already applied.`;
+    }
   }
 
   formatProductName(name: any, quantity: any) {
@@ -802,13 +844,30 @@ export class CheckoutPage {
     }
   }
 
+  displayTotalCouponDiscount(sub_total: any, total: any) {
+    // Remove dollar signs and convert to numbers
+    const totalNum = parseFloat(total.replace(/\$/g, ''));
+    const subTotalNum = parseFloat(sub_total.replace(/\$/g, ''));
+
+    const coupon_discount = subTotalNum - totalNum;
+
+    // Calculate and return the discount
+    return coupon_discount.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    });
+  }
+
   async checkout() {
     if (!this.customer_isloggedin) {
       this.loginRegister();
-    } else if (!this.customer_adderss_set) {
+    } else if (
+      !this.customer_adderss_set ||
+      this.customer.billing?.first_name
+    ) {
       this.updateAddress();
     } else {
-      this.util.loader('Checkout in progress...');
+      this.util.loaderNoDuration('Checkout in progress...');
       // Set Shipping method title to free delivery if user is prime
       if (this.isprime) {
         this.shippingTypeTitle = 'Free Delivery';
@@ -817,10 +876,11 @@ export class CheckoutPage {
       let checkout: any = {
         customer_id: `${this.dataservice.global_auth.id}`,
         payment_method: this.paymentId,
-        payment_method_title: this.paymentMethodTitle,
+        payment_method_title: this.paymentTitle,
         set_paid: false,
         billing: this.customer.customer.billing,
         line_items: this.lineitems,
+        coupon_lines: this.coupon_code_array,
         shipping_lines: [
           {
             method_id: this.shippingType,
@@ -839,7 +899,7 @@ export class CheckoutPage {
           },
         ],
       };
-      if (!this.dataservice.global_auth.customer.shipping?.address_1) {
+      if (!this.dataservice.global_auth.customer?.shipping?.address_1) {
         checkout = {
           ...checkout,
           shipping: this.customer.customer.billing,
@@ -850,9 +910,10 @@ export class CheckoutPage {
           shipping: this.customer.customer.shipping,
         };
       }
-      if (this.coupon_code) {
-        checkout = { ...checkout, coupon_lines: [{ code: this.coupon_code }] };
-      }
+      // console.log('this.coupon_code_arra: ', this.coupon_code_array);
+      // if (this.coupon_code_array > 0) {
+      //   checkout = { ...checkout, coupon_lines: this.coupon_code_array };
+      // }
       if (this.customerNote) {
         checkout = {
           ...checkout,
@@ -904,7 +965,7 @@ export class CheckoutPage {
       }
       await this.dataservice
         .doPlaceOrder(checkout)
-        .then((resp: any) => {
+        .then(async (resp: any) => {
           if (resp.data) {
             // Add order note
             if (this.customerNote !== '') {
@@ -924,10 +985,9 @@ export class CheckoutPage {
                 email: resp.data.billing.email,
                 phone: resp.data.billing.phone,
               };
-              this.dataservice
+              await this.dataservice
                 .doAuthorizeCCPayment(payment_data, this.customer.token)
                 .then((cc_resp: any) => {
-                  console.log('cc_resp', cc_resp);
                   if (cc_resp.success) {
                     this.util.presentAlertToast(
                       `${cc_resp.data.mesage}. Your order is now being processed.`,
@@ -941,32 +1001,48 @@ export class CheckoutPage {
                   }
                 });
             }
-            console.log('order completed: ', resp.data);
             this.orderCompleteNotice();
             const placed_order = resp.data;
             this.dataservice.global_cart = null;
             this.cart = this.dataservice.global_cart;
             this.dataservice.doRemoveCart();
+            if (this.coupon_code_array?.length > 0) {
+              this.coupon_code_array = [];
+            }
             // Send order Notification after order placed
+            let extra = {
+              route: '/tabs/account',
+            };
             this.checkifPendingNotification();
             this.util.scheduleLocalNotification(
               1002,
               `Your order ${placed_order.number} has been placed.`,
               1000,
-              '/tabs/account'
+              '/tabs/account/',
+              extra
             );
             this.util.dismissLoader();
             this.util.presentAlertToast(
               `Your order #${resp.data.number} was made successfully. Please look out for a confirmation email.`,
-              'mail'
+              'mail',
+              'd2dblue'
+            );
+          } else {
+            this.util.dismissLoader();
+            this.util.presentAlertToast(
+              `Something went wrong. Please try again later.`,
+              'information',
+              'danger'
             );
           }
         })
         .catch((e: any) => {
           console.error('Error placing order', e);
+          this.util.dismissLoader();
           this.util.presentAlertToast(
             `Something went wrong: ${e}.`,
-            'information'
+            'information',
+            'danger'
           );
         });
     }

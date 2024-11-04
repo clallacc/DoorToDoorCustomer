@@ -20,6 +20,7 @@ import { CustomerPage } from '../customer/customer.page';
 import { RecipesPage } from '../recipes/recipes.page';
 import { UtilService } from '../services/util.service';
 import { AddpaymentPage } from '../addpayment/addpayment.page';
+import { SentnotificationPage } from '../sentnotification/sentnotification.page';
 
 @Component({
   selector: 'app-account',
@@ -37,6 +38,7 @@ export class AccountPage implements OnInit {
   disabled: any = true;
   modal: any;
   deviceOs: any;
+  user_role: any;
   server_site: any = localStorage.getItem('d2d_site_server');
 
   @ViewChild('accordionGroup', { static: false }) accordionGroup:
@@ -97,6 +99,15 @@ export class AccountPage implements OnInit {
       // Call your function here when dismissed
       this.userLoginStatus();
     });
+  }
+
+  async pushNotificationMenu() {
+    const modal = await this.modalCtrl.create({
+      component: SentnotificationPage,
+      breakpoints: [0, 0.5, 1],
+      initialBreakpoint: 0.5,
+    });
+    modal.present();
   }
 
   async loadcategories() {

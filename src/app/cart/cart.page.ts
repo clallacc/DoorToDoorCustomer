@@ -147,7 +147,6 @@ export class CartPage {
   async updateCartSync(id: any, images?: any, quantity?: any) {
     await this.dataservice.doProductGet(id).then((product: any) => {
       this.util.updateCart(id, product.data, images, quantity);
-      console.log('product', product.data);
     });
     this.retrieveUserCart(this.dataservice.global_auth.token);
     this.calculateTotal();

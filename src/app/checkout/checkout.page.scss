@@ -38,6 +38,27 @@ h3 {
     filter: drop-shadow(5px 5px 14px  rgba(0,0,0,0.26));
 }
 
+.scrollable-coupons {
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent line breaks */
+    width: 100%; /* Ensure it takes full width */
+    span {
+        display: inline-block;
+    }
+    .code-display {
+        position: relative;
+        .code-discount-display {
+            display: block;
+            position: absolute;
+            top: 15px;
+            right: 0;
+            font-size: xx-small;
+            color: #a9d447;
+            font-weight: 900;
+        }
+    }
+  }
+
 .sale-span {
     position: absolute;
     top: 0;

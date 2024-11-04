@@ -7,30 +7,57 @@ export const routes: Routes = [
     component: TabsPage,
     children: [
       {
-        path: 'tab1',
+        path: 'home',
         loadComponent: () =>
-          import('../tab1/tab1.page').then((m) => m.Tab1Page),
+          import('../home/home.page').then((m) => m.HomePage),
       },
       {
-        path: 'tab2',
+        path: 'cart',
         loadComponent: () =>
-          import('../tab2/tab2.page').then((m) => m.Tab2Page),
+          import('../cart/cart.page').then((m) => m.CartPage),
       },
       {
-        path: 'tab3',
+        path: 'checkout',
         loadComponent: () =>
-          import('../tab3/tab3.page').then((m) => m.Tab3Page),
+          import('../checkout/checkout.page').then((m) => m.CheckoutPage),
+      },
+      {
+        path: 'shoplist',
+        loadComponent: () =>
+          import('../shoplist/shoplist.page').then((m) => m.ShoplistPage),
+      },
+      {
+        path: 'products/:feature/:category',
+        loadComponent: () =>
+          import('../products/products.page').then((m) => m.ProductsPage),
+      },
+      {
+        path: 'productdetail/:id',
+        loadComponent: () =>
+          import('../productdetail/productdetail.page').then(
+            (m) => m.ProductdetailPage
+          ),
+      },
+      {
+        path: 'bcscanner',
+        loadComponent: () =>
+          import('../bcscanner/bcscanner.page').then((m) => m.BcscannerPage),
+      },
+      {
+        path: 'account',
+        loadComponent: () =>
+          import('../account/account.page').then((m) => m.AccountPage),
       },
       {
         path: '',
-        redirectTo: '/tabs/tab1',
+        redirectTo: '/tabs/home',
         pathMatch: 'full',
       },
     ],
   },
   {
     path: '',
-    redirectTo: '/tabs/tab1',
+    redirectTo: '/tabs/home',
     pathMatch: 'full',
   },
 ];

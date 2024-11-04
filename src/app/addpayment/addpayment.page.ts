@@ -83,7 +83,6 @@ export class AddpaymentPage implements OnInit {
       expiry: `${this.card_expiry_year}${this.card_expiry_month}`,
       name: `${this.first_name} ${this.last_name}`,
     };
-    console.log('saved card details', card_data);
     this.dataservice
       .doPlaceOrderStoreCC(card_data, this.user_details.token)
       .then((data: any) => {

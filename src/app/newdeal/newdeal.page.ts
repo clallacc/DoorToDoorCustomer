@@ -75,10 +75,14 @@ export class NewdealPage implements OnInit {
     return this.util.imageURL(image);
   }
 
-  fiximgUrl(url: any) {
-    let newUrl;
-    newUrl = url.replace('i0.wp.com/', '');
-    return newUrl;
+  fixinnerHtmlImageUrl(htmlContent: any) {
+    return htmlContent.replace('src="https://', 'src="https://i0.wp.com/');
+  }
+
+  fixJetpackImgUrl(url: any) {
+    if (url) {
+      return url.replace('https://', 'https://i0.wp.com/');
+    }
   }
 
   ngOnInit() {

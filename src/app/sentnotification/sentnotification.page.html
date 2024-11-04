@@ -1,0 +1,75 @@
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar color="light">
+      <ion-title size="large">
+        <span class="add-card">
+          Manage Push Notifications
+        </span>
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <div class="main-content-div">
+    <ion-list class="ion-padding">
+      <ion-item-group>
+        <ion-item-divider>
+          <ion-label> Details </ion-label>
+        </ion-item-divider>
+      </ion-item-group>
+      <ion-item lines="full">
+        <ion-input required [(ngModel)]="title" [ngModelOptions]="{standalone: true}"  type="text" placeholder="Title: "></ion-input>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-textarea required [(ngModel)]="body" [ngModelOptions]="{standalone: true}" label="Description:" labelPlacement="stacked"></ion-textarea>
+      </ion-item>
+      <ion-item-group>
+        <ion-item-divider>
+          <ion-label> Set Notification Click </ion-label>
+          <small slot="end">page / product / product cat.</small>
+        </ion-item-divider>
+      </ion-item-group>
+      <ion-item lines="full">
+        <ion-input required [(ngModel)]="extra_key" [ngModelOptions]="{standalone: true}"  type="text" placeholder="Page Type: "></ion-input>
+      </ion-item>
+      <ion-item lines="full">
+        <ion-input required [(ngModel)]="extra_value" [ngModelOptions]="{standalone: true}"  type="text" placeholder="Page Category ID: "></ion-input>
+      </ion-item>
+      <ion-item-group>
+        <ion-item-divider>
+          <ion-label> Schedule Information </ion-label>
+        </ion-item-divider>
+      </ion-item-group>
+      <ion-item lines="none">
+        <ion-label>Date and Time (default send now)</ion-label>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-datetime (ionChange)="setScheduleDateTime($event)" color="d2dblue"></ion-datetime>
+      </ion-item>
+      <ion-item class="ion-margin-top ion-text-center" lines="none">
+        <ion-button (click)="firestorePostNotificationData()" color="d2dblue" shape="rounded" size="medium" expand="block" slot="end">Send Notification</ion-button>
+      </ion-item>
+    </ion-list>
+    <ion-grid class="ion-margin-top ion-padding-top">
+      <ion-row>
+        <ion-col>
+          <ion-item> <h3>Campaigns</h3> <ion-button (click)="refreshNotifications()" color="danger" fill="clear" slot="end"><ion-icon name="refresh"></ion-icon></ion-button></ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-progress-bar *ngIf="show_refresh_progress" color="d2dgreen" type="indeterminate"></ion-progress-bar>
+        <ion-col *ngFor="let campaigns of firestore_campaigns" size="12">
+          <ion-item [color]="convertDateObject(campaigns.schedule.at)">
+            <ion-label>
+              <strong>{{campaigns.title}}</strong>
+              <ion-text>{{campaigns.body}}</ion-text><br />
+              <ion-note [color]="!convertDateObject(campaigns.schedule.at) ? 'medium' : 'light'" class="ion-text-wrap">
+                {{campaigns.schedule.at}}
+              </ion-note>
+            </ion-label>
+            <ion-button *ngIf="!convertDateObject(campaigns.schedule.at)" (click)="updatePushPressed(campaigns.docId)" size="small" slot="end" fill="clear"><ion-icon [color]="!convertDateObject(campaigns.schedule.at) ? 'd2dblue' : 'light'" name="create"></ion-icon></ion-button>
+            <ion-button (click)="removePushPressed(campaigns.docId, campaigns.title)" size="small" slot="end" fill="clear"><ion-icon color="d2dblue" name="remove-circle" [color]="!convertDateObject(campaigns.schedule.at) ? 'd2dblue' : 'light'"></ion-icon></ion-button>
+        </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+</ion-content>

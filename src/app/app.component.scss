@@ -1,0 +1,33 @@
+ion-list {
+    overflow: scroll;
+}
+
+.center-label {
+    text-align: left;
+    padding: 0px;
+    font-size: 12px;
+}
+
+.info-div {
+    padding: 20px;
+}
+
+.info-div a {
+    display: block;
+    padding: 5px;
+    text-align: left;
+    color: #606060;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+ion-item {
+    --background: transparent !important;
+    ion-label {
+        font-size: 12px;
+    }
+}
+
+ion-menu {
+    border-radius: 60px;
+}

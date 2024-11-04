@@ -1,1 +1,66 @@
 
+ion-tab-bar {
+    padding-top: 20px;
+    padding-bottom: 10px;
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    overflow: visible;
+}
+ion-tab-button {
+    margin-bottom: 20px;
+}
+
+.cart-btn {
+    position: fixed;
+    font-size: 12px;
+    top: 5px;
+    height: 90%;
+    border-radius: 100px;
+    padding: 5px 10px;
+    border: 5px solid #ffffff;
+    z-index: 100;
+    filter: drop-shadow(5px 5px 14px  rgba(0,0,0,0.26));
+    // background-color: #69bb7b;
+    background-color: #00829f;
+    font-weight: bold;
+}
+
+.back-btn-swiper {
+    position:fixed;
+    left: -100vw;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(28, 28, 28, 0.344);
+    z-index: 1;
+    border-radius: 60px;
+    ion-icon {
+        position: absolute;
+        top: 50Vh;
+        right: 10px;
+        font-size: 30px;
+        color: #ffffff;
+    }
+}
+
+.dtd-custom-tab-bar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    --background: #69bb7be9; /* Set background to transparent */
+    --ion-color-base: #69bb7be9 !important; /* Ensure base color is transparent */
+    filter: drop-shadow(5px 5px 14px  rgba(2, 129, 93, 0.73));
+}
+
+.tab-selected ion-icon {
+    animation: pulse-animation 1.5s infinite;
+    transform-origin: center; /* Ensures the pulse effect is centered */
+  }
+
+  @keyframes pulse-animation {
+    0%, 100% {
+      transform: scale(1); /* Original size */
+    }
+    50% {
+      transform: scale(1.1); /* Scale up to 110% */
+    }
+  }

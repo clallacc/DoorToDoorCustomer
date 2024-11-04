@@ -8,8 +8,8 @@
   </ion-header>
   <div *ngIf="new_deals">
     <ion-card *ngFor="let deal of new_deals">
-      <img [src]="fiximgUrl(deal.jetpack_featured_media_url)" />
-      <div class="card-content" [innerHTML]="deal.content.rendered"></div>
+      <img *ngIf="deal.jetpack_featured_media_url" [src]="fixJetpackImgUrl(deal.jetpack_featured_media_url)" />
+      <div class="card-content" [innerHTML]="fixinnerHtmlImageUrl(deal.content.rendered)"></div>
     </ion-card>
   </div>
   <!-- Page data -->

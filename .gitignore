@@ -22,6 +22,7 @@ log.txt
 /www
 /platforms
 /plugins
+/environments
 
 # Compiled output
 /dist
@@ -62,6 +63,7 @@ yarn-error.log
 /libpeerconnection.log
 testem.log
 /typings
+/android-key
 
 # System files
 .DS_Store

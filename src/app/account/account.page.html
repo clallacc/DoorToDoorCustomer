@@ -77,6 +77,11 @@
               </ion-button>
             </ion-col>
           </ion-row>
+          <ion-row *ngIf="userData && userData?.customer?.role == 'administrator'">
+            <ion-col size="12">
+              <ion-button (click)="pushNotificationMenu()" [disabled]="disabled" color="d2dblue" shape="rounded" expand="block">Send Push Notification</ion-button>
+            </ion-col>
+          </ion-row>
           <ion-item class="loading-spinner" *ngIf="!categories">
             <ion-spinner name="circles"></ion-spinner>
           </ion-item>

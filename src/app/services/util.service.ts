@@ -3,11 +3,15 @@ import { LoadingController, ToastController } from '@ionic/angular';
 import { DataService } from './data.service';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { Router, RouterModule } from '@angular/router';
+import { environment } from 'src/environments/environment';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UtilService {
+  private db = getFirestore(initializeApp(environment.firebaseConfig));
   constructor(
     private loadingCtl: LoadingController,
     private dataservice: DataService,
@@ -82,6 +86,7 @@ export class UtilService {
         this.dataservice.global_auth = JSON.parse(res.value);
         if (this.dataservice.global_auth.token) {
           this.getTokenValidation(this.dataservice.global_auth.token);
+          this.syncScheduleOrderData(this.dataservice.global_auth.token);
         }
       }
     });
@@ -103,7 +108,6 @@ export class UtilService {
       .doGetCCStoredCards(customer_email)
       .then((result: any) => {
         if (result.data.data.length > 0) {
-          console.log('CC payment_methods', result);
           userJson.payment_methods = result.data.data;
           this.dataservice.doSaveUser(JSON.stringify(userJson));
           this.dataservice.global_auth = userJson;
@@ -210,7 +214,6 @@ export class UtilService {
         if (!token.data.success) {
           // Refresh the token
           this.refreshJWTToken();
-          console.log('D2D JWT token has expired');
         } else {
           console.log('D2D JWT token is valid');
         }
@@ -233,12 +236,12 @@ export class UtilService {
       });
 
     // do token refresh
-    this.dataservice
-      .doGetJWTRefreshToken(this.dataservice.global_auth.token)
-      .then((token: any) => {
-        console.log('tokemn', this.dataservice.global_auth.token);
-        console.log('new refresh token', token);
-      });
+    // this.dataservice
+    //   .doGetJWTRefreshToken(this.dataservice.global_auth.token)
+    //   .then((token: any) => {
+    //     console.log('tokemn', this.dataservice.global_auth.token);
+    //     console.log('new refresh token', token);
+    //   });
   }
 
   // Update cart items
@@ -325,7 +328,7 @@ export class UtilService {
           .syncShoplistWeb(id, this.dataservice.global_auth.token)
           .then((resp: any) => {
             if (resp) {
-              console.log('we have a response', resp);
+              console.log('we have a response');
             }
           })
           .catch((e: any) => {
@@ -350,8 +353,16 @@ export class UtilService {
   ) {
     let itemmessage = `${item} - ${message}`;
     const toast = await this.toastController.create({
-      message: itemmessage,
-      duration: 3500,
+      buttons: [
+        {
+          text: itemmessage,
+          role: 'action',
+          handler: () => {
+            this.router.navigate(['/tabs/cart/']);
+          },
+        },
+      ],
+      duration: 6500,
       position: 'bottom',
       icon: icon,
       color: 'warning',
@@ -363,7 +374,7 @@ export class UtilService {
     image.setAttribute('height', '35');
     image.setAttribute('width', '35');
     image.style.position = 'absolute';
-    image.style.right = '2px';
+    image.style.right = '8px';
     image.style.borderRadius = '10px';
     toast.shadowRoot?.querySelector('.toast-content')?.appendChild(image);
     toast.present();
@@ -377,8 +388,16 @@ export class UtilService {
   ) {
     let itemmessage = `${item} - ${message}`;
     const toast = await this.toastController.create({
-      message: itemmessage,
-      duration: 3500,
+      buttons: [
+        {
+          text: itemmessage,
+          role: 'action',
+          handler: () => {
+            this.router.navigate(['/tabs/shoplist/']);
+          },
+        },
+      ],
+      duration: 6500,
       position: 'bottom',
       icon: icon,
       color: 'warning',
@@ -390,7 +409,7 @@ export class UtilService {
     image.setAttribute('height', '35');
     image.setAttribute('width', '35');
     image.style.position = 'absolute';
-    image.style.right = '2px';
+    image.style.right = '8px';
     image.style.borderRadius = '10px';
     toast.shadowRoot?.querySelector('.toast-content')?.appendChild(image);
     toast.present();
@@ -402,6 +421,16 @@ export class UtilService {
       spinner: 'dots',
       cssClass: 'dtd-loading',
       duration: 5000,
+    });
+
+    loading.present();
+  }
+
+  async loaderNoDuration(message: any) {
+    const loading = await this.loadingCtl.create({
+      message: message,
+      spinner: 'dots',
+      cssClass: 'dtd-loading',
     });
 
     loading.present();
@@ -420,7 +449,7 @@ export class UtilService {
     }
     const toast = await this.toastController.create({
       message: message,
-      duration: 3500,
+      duration: 6500,
       position: 'bottom',
       icon: icon,
       color: toast_color,
@@ -439,7 +468,8 @@ export class UtilService {
     notification_id: any,
     message: any,
     delay_miliseconds: number,
-    route: any
+    route: any,
+    extra: any
   ) {
     const delay = 5 * 60 * delay_miliseconds; // 4 minutes in milliseconds
     // const delay = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
@@ -452,7 +482,7 @@ export class UtilService {
           smallIcon: 'house',
           actionTypeId: 'OPEN_PRODUCT',
           schedule: { at: new Date(Date.now() + delay) },
-          extra: null,
+          extra: extra ? extra : null,
         },
       ],
     });
@@ -465,6 +495,49 @@ export class UtilService {
         }
       }
     );
+  }
+
+  async firestorePushNotification(data: any, route: any, id: any) {
+    await LocalNotifications.schedule({
+      notifications: [data],
+    });
+    // Add a listener for notification click event
+    LocalNotifications.addListener(
+      'localNotificationActionPerformed',
+      async (notificationAction) => {
+        if (notificationAction.actionId === 'OPEN_FIREPUSH') {
+          this.router.navigate([route, id]);
+        }
+      }
+    );
+  }
+
+  async cancelLocalNotification(id: any) {
+    await LocalNotifications.cancel(id);
+  }
+
+  async syncScheduleOrderData(token: any) {
+    this.dataservice.doGetScheduleData(token).then((res: any) => {
+      if (res) {
+        this.dataservice.doStoreScheduleData(JSON.stringify(res.data));
+      }
+    });
+  }
+
+  async getFirestoreNotidications() {
+    const collectionRef = collection(this.db, 'd2d-app-push-notifications');
+    const snapshot = await getDocs(collectionRef);
+    const notifications = snapshot.docs.map((doc) => ({
+      docId: doc.id,
+      ...doc.data(),
+    }));
+    // Sort notifications in descending order based on schedule.at
+    const sortedNotifications = notifications.sort((a: any, b: any) => {
+      const dateA = a.schedule?.at ? new Date(a.schedule.at) : new Date(0);
+      const dateB = b.schedule?.at ? new Date(b.schedule.at) : new Date(0);
+      return dateB.getTime() - dateA.getTime(); // Descending order
+    });
+    this.dataservice.global_firestore_campaigns = notifications;
   }
 
   swipeToGoBack() {
@@ -557,6 +630,191 @@ export class UtilService {
         }
       }
     }
+  }
+
+  checkCouponUsage(data: { [key: number]: any }, value: any) {
+    return Object.values(data).filter((item) => item === value).length;
+  }
+
+  valudateCoupon(
+    coupon_code: any,
+    coupon_data: any,
+    sub_total: any,
+    is_prime: any,
+    customer_email?: any,
+    coupon_array?: any,
+    individual_use_coupon_set?: any,
+    cart?: any
+  ) {
+    let notice = '';
+    let valid = true;
+    let discount_amount = '';
+    let discount_type = '';
+    let free_delivery = false;
+    let free_delivery_cost = 0.0;
+
+    // Filter coupons to exact match
+    coupon_data = coupon_data.filter(
+      (coupon_filter: any) => coupon_filter.code === coupon_code
+    );
+
+    // Handle apply coupon
+    if (coupon_data && coupon_data.length === 1) {
+      console.log('coupon_data', coupon_data);
+      // set coupon free shipping option true/false
+      if (is_prime || coupon_data[0]?.free_shipping) {
+        free_delivery = true;
+      }
+      // check coupon schedule data
+      const currentDate = new Date();
+      const couponMetaData = coupon_data[0]?.meta_data;
+      const foundMeta = couponMetaData?.find(
+        (item: { key: string }) =>
+          item.key === '_acfw_enable_date_range_schedule'
+      );
+      if (foundMeta?.value === 'yes') {
+        const couponScheduleStart = couponMetaData?.find(
+          (item: { key: string }) => item.key === '_acfw_schedule_start'
+        );
+        const couponScheduleEnd = couponMetaData?.find(
+          (item: { key: string }) => item.key === '_acfw_schedule_end'
+        );
+        // check coupon schedule date satated
+        const couponScheduleStartDate = new Date(couponScheduleStart.value);
+        if (currentDate < couponScheduleStartDate) {
+          const couponScheduleStartError = couponMetaData?.find(
+            (item: { key: string }) =>
+              item.key === '_acfw_schedule_start_error_msg'
+          );
+          if (couponScheduleStartError?.value) {
+            notice = couponScheduleStartError.value;
+          } else {
+            notice = `Your coupon code will be active from ${couponScheduleStart.value}`;
+          }
+          valid = false;
+        }
+        const couponScheduleEndDate = new Date(couponScheduleEnd.value);
+        if (currentDate > couponScheduleEndDate) {
+          const couponScheduleEndError = couponMetaData.find(
+            (item: { key: string }) =>
+              item.key === '_acfw_schedule_expire_error_msg'
+          );
+          if (couponScheduleEndError?.value) {
+            notice = couponScheduleEndError.value;
+          } else {
+            notice = `Your coupon code has expired`;
+          }
+          valid = false;
+        }
+      }
+      // check usage count limit not crossed
+      if (
+        coupon_data[0]?.usage_limit &&
+        this.checkCouponUsage(
+          coupon_data[0]?.used_by,
+          this.dataservice.global_auth.id
+        ) > coupon_data[0]?.usage_limit
+      ) {
+        notice = `Usage limit ${coupon_data[0]?.usage_limit} was exceeded`;
+        valid = false;
+      }
+      // check usage count limit not crossed
+      if (
+        coupon_data[0]?.usage_count >= coupon_data[0]?.usage_limit_per_user &&
+        coupon_data?.length === 1 &&
+        this.checkCouponUsage(
+          coupon_data[0]?.used_by,
+          this.dataservice.global_auth.id
+        ) >= coupon_data[0]?.usage_limit_per_user &&
+        coupon_data[0]?.usage_limit_per_user !== null
+      ) {
+        notice = `Coupon limit ${coupon_data[0]?.usage_limit_per_user} per user`;
+        valid = false;
+      }
+      const subtotal = sub_total.replace('$', '');
+      const rawSubtotal = subtotal.replace(',', '');
+      if (
+        parseFloat(coupon_data[0]?.minimum_amount) >= 0 ||
+        parseFloat(coupon_data[0]?.maximum_amount) >= 0
+      ) {
+        // Calculate minimum spend
+        if (
+          parseFloat(coupon_data[0]?.minimum_amount) > 0 &&
+          Number(rawSubtotal) < parseFloat(coupon_data[0]?.minimum_amount)
+        ) {
+          notice = `Minimum purchase $${coupon_data[0]?.minimum_amount}`;
+          valid = false;
+        }
+        // Calculate maximum spend
+        if (
+          parseFloat(coupon_data[0]?.maximum_amount) > 0 &&
+          Number(rawSubtotal) > parseFloat(coupon_data[0]?.maximum_amount)
+        ) {
+          notice = `Maximum purchase $${coupon_data[0]?.maximum_amount}`;
+          valid = false;
+        }
+      }
+
+      // check if coupon restricted to email
+      if (coupon_data[0]?.email_restrictions.length > 0) {
+        const email = coupon_data[0]?.email_restrictions.find(
+          (email: string) => email === customer_email
+        );
+        if (!email) {
+          notice = `Sorry, this coupon is not applicable.`;
+          valid = false;
+        }
+      }
+
+      // Set discount and discount type
+      discount_amount = coupon_data[0]?.amount;
+      discount_type = coupon_data[0]?.discount_type;
+    } else {
+      valid = false;
+      notice = `Coupon "${coupon_code}" does not exist!`;
+    }
+    if (
+      (coupon_data[0]?.individual_use && coupon_array?.length > 0) ||
+      individual_use_coupon_set
+    ) {
+      valid = false;
+      notice = `Coupon can only be used solely.`;
+    }
+    // check if individual use set
+    if (coupon_data[0]?.individual_use) {
+      individual_use_coupon_set = true;
+    }
+
+    // Check if products limit
+    if (coupon_data[0].product_ids?.length > 0) {
+      const validIds = coupon_data[0].product_ids;
+      const cartProductIds = cart.map((product: any) => product.id);
+      const exists = cartProductIds.some((id: any) => validIds.includes(id));
+      if (!exists) {
+        valid = false;
+        notice = `Sorry, this coupon is not applicable to these products.`;
+      }
+    }
+
+    // Check if products exclided
+    if (coupon_data[0].excluded_product_ids.length > 0) {
+      const validIds = coupon_data[0].product_ids;
+      const cartProductIds = cart.map((product: any) => product.id);
+      const exists = cartProductIds.some((id: any) => validIds.includes(id));
+      if (exists) {
+        valid = false;
+        notice = `Sorry, this coupon is not applicable to these products.`;
+      }
+    }
+
+    return {
+      notice: notice,
+      validity: valid,
+      discount_amount: discount_amount,
+      discount_type: discount_type,
+      free_delivery: free_delivery,
+      free_delivery_cost: free_delivery_cost,
+    };
   }
 
   d2dLocations() {
@@ -839,8 +1097,5 @@ export class UtilService {
         originalString += char;
       }
     }
-    console.log(
-      `Decoded 20th character after ${password} is '${originalString}'.`
-    );
   }
 }
