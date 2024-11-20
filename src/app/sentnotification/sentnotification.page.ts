@@ -25,6 +25,8 @@ export class SentnotificationPage implements OnInit {
   firestore_campaigns: any;
   notice_color: string = '';
   current_date: any;
+  customer_email: string = '';
+  prime_only: boolean = false;
   show_refresh_progress: any = false;
 
   constructor(
@@ -36,6 +38,7 @@ export class SentnotificationPage implements OnInit {
   setupNotificationPop() {
     this.firestore_campaigns = this.dataservice.global_firestore_campaigns;
     this.current_date = new Date(Date.now());
+    console.log('this.firestore_campaigns', this.firestore_campaigns);
   }
 
   convertDateObject(campaign_date: any) {
@@ -64,18 +67,34 @@ export class SentnotificationPage implements OnInit {
     }
     if (this.title && this.body) {
       let notificationId: number = this.datetime.getTime();
+      // const data = {
+      //   id: notificationId,
+      //   title: this.title,
+      //   body: this.body,
+      //   smallIcon: 'house',
+      //   actionTypeId: 'OPEN_FIREPUSH',
+      //   schedule: { at: `${this.datetime}` },
+      //   extra:
+      //     this.extra_key && this.extra_value
+      //       ? { [this.extra_key]: this.extra_value }
+      //       : null,
+      // };
       const data = {
         id: notificationId,
         title: this.title,
         body: this.body,
         smallIcon: 'house',
         actionTypeId: 'OPEN_FIREPUSH',
-        schedule: { at: `${this.datetime}` },
-        extra:
-          this.extra_key && this.extra_value
-            ? { [this.extra_key]: this.extra_value }
-            : null,
+        schedule: `${this.datetime}`,
+        extra: {
+          page_key: this.extra_key ? this.extra_key : null,
+          page_id: this.extra_value ? this.extra_key : null,
+          prime_only: this.prime_only,
+          customer_email: this.customer_email ? this.customer_email : null,
+        },
       };
+
+      console.log('push data', data);
 
       // store push notification in firestore
       await this.dataservice
@@ -99,7 +118,6 @@ export class SentnotificationPage implements OnInit {
             'alert-circle',
             'danger'
           );
-          console.error('Error posting data: ', error);
         });
     } else {
       this.util.presentAlertToast(
@@ -110,7 +128,7 @@ export class SentnotificationPage implements OnInit {
     }
   }
 
-  async updatePushPressed(docId: any) {
+  async updatePushPressed(id: any) {
     const alert = await this.alert.create({
       header: 'Update Notification',
       inputs: [
@@ -137,7 +155,7 @@ export class SentnotificationPage implements OnInit {
         {
           text: 'Update',
           handler: (data) => {
-            this.updatePushNotidication(docId, data.title, data.body);
+            this.updatePushNotidication(id, data.title, data.body);
             // Here you can handle the update logic, e.g., save the data
           },
         },

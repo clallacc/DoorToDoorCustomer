@@ -31,3 +31,41 @@ ion-item {
 ion-menu {
     border-radius: 60px;
 }
+
+ion-backdrop {
+    background: var(--ion-color-dark);
+    opacity: 0.3;
+}
+
+.close-notification-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+#notification-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateY(-50%) translateX(-50%);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ion-background-color, #fff);
+    width: 90%;
+    height: max-content;
+    border-radius: 10px;
+}
+
+.notification-box {
+    p {
+        font-size: small;
+    }
+    ion-list {
+        margin-top: 25px;
+        background: none;
+    }
+}
+  
+  

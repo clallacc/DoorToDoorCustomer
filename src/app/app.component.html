@@ -40,4 +40,22 @@
   </ion-menu>
   <ion-router-outlet id="content">
   </ion-router-outlet>
+  <ion-backdrop [visible]="true" *ngIf="foregroundNotifications">
+  </ion-backdrop>
+  <div *ngIf="foregroundNotifications" class="ion-padding notification-box" id="notification-box">
+    <ion-button (click)="closeNotification()" class="close-notification-btn" fill="clear" color="light">
+      <ion-icon color="d2dblue" name="close"></ion-icon>
+    </ion-button>
+    <ion-list class="ion-margin-top">
+      <ion-item lines="none">
+        <ion-label class="ion-text-wrap">
+          <h2>{{foregroundNotificationsData.title}}</h2>
+        </ion-label>
+      </ion-item>
+      <ion-img class="ion-padding" src="../assets/doortodoorlogo.png"></ion-img>
+      <ion-item lines="none">
+        <p>{{foregroundNotificationsData.body}}</p>
+      </ion-item>
+    </ion-list>
+  </div>
 </ion-app>

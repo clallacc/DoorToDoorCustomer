@@ -5,13 +5,16 @@
       <img alt="User Profile Icon" src="/assets/userblue.svg" />
     </ion-avatar>
     <h6>Sign In to your account</h6>
-  <ion-list>
+    <ion-button *ngIf="userDefaults.refresh_access" (click)="populateCredentials()" fill="clear" color="d2dblue" size="small">Populate Credentials</ion-button>
+  <ion-list class="ion-margin-top">
     <form id="loginForm" (ngSubmit)="LoginUser()">
     <ion-item>
-        <ion-input required [(ngModel)]="username" [ngModelOptions]="{standalone: true}"  type="email" placeholder="Username/Email"></ion-input>
+      <ion-label position="floating">Username</ion-label>
+        <ion-input required [(ngModel)]="username" autocomplete="username" [ngModelOptions]="{standalone: true}"  type="email" placeholder="Username/Email"></ion-input>
     </ion-item>
     <ion-item>
-        <ion-input required [(ngModel)]="password" [ngModelOptions]="{standalone: true}"  type="password" placeholder="Password"></ion-input>
+      <ion-label position="floating">Password</ion-label>
+        <ion-input required [(ngModel)]="password" autocomplete="current-password" [ngModelOptions]="{standalone: true}"  type="password" placeholder="Password"></ion-input>
     </ion-item>
   </form>
   </ion-list>

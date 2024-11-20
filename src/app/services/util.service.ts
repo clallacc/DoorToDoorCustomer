@@ -91,6 +91,12 @@ export class UtilService {
       }
     });
     this.paymentMethods();
+    if (
+      this.dataservice.global_auth.refresh_access &&
+      !this.dataservice.global_auth.token
+    ) {
+      this.refreshJWTToken();
+    }
   }
 
   async RefreshCustomerData() {
@@ -214,6 +220,7 @@ export class UtilService {
         if (!token.data.success) {
           // Refresh the token
           this.refreshJWTToken();
+          console.log('D2D JWT token is not valid');
         } else {
           console.log('D2D JWT token is valid');
         }
@@ -236,12 +243,12 @@ export class UtilService {
       });
 
     // do token refresh
-    // this.dataservice
-    //   .doGetJWTRefreshToken(this.dataservice.global_auth.token)
-    //   .then((token: any) => {
-    //     console.log('tokemn', this.dataservice.global_auth.token);
-    //     console.log('new refresh token', token);
-    //   });
+    this.dataservice
+      .doGetJWTRefreshToken(this.dataservice.global_auth.token)
+      .then((token: any) => {
+        console.log('tokemn', this.dataservice.global_auth.token);
+        console.log('new refresh token', token);
+      });
   }
 
   // Update cart items
@@ -533,11 +540,11 @@ export class UtilService {
     }));
     // Sort notifications in descending order based on schedule.at
     const sortedNotifications = notifications.sort((a: any, b: any) => {
-      const dateA = a.schedule?.at ? new Date(a.schedule.at) : new Date(0);
-      const dateB = b.schedule?.at ? new Date(b.schedule.at) : new Date(0);
+      const dateA = a.schedule ? new Date(a.schedule) : new Date(0);
+      const dateB = b.schedule ? new Date(b.schedule) : new Date(0);
       return dateB.getTime() - dateA.getTime(); // Descending order
     });
-    this.dataservice.global_firestore_campaigns = notifications;
+    this.dataservice.global_firestore_campaigns = sortedNotifications;
   }
 
   swipeToGoBack() {
@@ -715,7 +722,7 @@ export class UtilService {
           this.dataservice.global_auth.id
         ) > coupon_data[0]?.usage_limit
       ) {
-        notice = `Usage limit ${coupon_data[0]?.usage_limit} was exceeded`;
+        notice = `Usage limit ${coupon_data[0]?.usage_limit} was exceeded.`;
         valid = false;
       }
       // check usage count limit not crossed
@@ -728,7 +735,7 @@ export class UtilService {
         ) >= coupon_data[0]?.usage_limit_per_user &&
         coupon_data[0]?.usage_limit_per_user !== null
       ) {
-        notice = `Coupon limit ${coupon_data[0]?.usage_limit_per_user} per user`;
+        notice = `Coupon limit ${coupon_data[0]?.usage_limit_per_user} per user.`;
         valid = false;
       }
       const subtotal = sub_total.replace('$', '');
@@ -1097,5 +1104,6 @@ export class UtilService {
         originalString += char;
       }
     }
+    return originalString;
   }
 }

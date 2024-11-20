@@ -25,6 +25,7 @@ export class LoginregisterPage implements OnInit {
   password: string = '';
   loading: any;
   page: any;
+  userDefaults: any = this.dataservice.global_auth;
 
   constructor(
     private dataservice: DataService,
@@ -46,11 +47,27 @@ export class LoginregisterPage implements OnInit {
             // this.util.setGlobalUserData();
             this.modalCtrl.dismiss({ disabled: false });
           }
-          alert(userData.message);
+          switch (userData.code) {
+            case 'jwt_auth_valid_credential':
+              alert(`Welcome back ${userData.data.displayName}`);
+              break;
+            case 'invalid_username':
+              alert('Please check our username or try your email');
+              break;
+            case 'incorrect_password':
+              alert('Please check your password and try again');
+              break;
+            default:
+              alert(userData.message);
+          }
         } else {
           alert('Something went wrong please try again later');
         }
       });
+  }
+
+  htmlToPlainText(html: string): string {
+    return html.replace(/<[^>]*>/g, ''); // Removes all HTML tags
   }
 
   async RegisterUser() {
@@ -81,21 +98,54 @@ export class LoginregisterPage implements OnInit {
                     data.data.data,
                     this.password
                   );
-                  // this.util.setGlobalUserData();
                   this.modalCtrl.dismiss({ disabled: false });
                   alert("You're all registered");
                 });
             } else {
-              alert(userData.message);
+              if (userData.code === 'rest_invalid_param') {
+                if (
+                  userData.additional_errors &&
+                  userData.additional_errors.length > 0
+                ) {
+                  const alertString = this.htmlToPlainText(
+                    `${userData.additional_errors[0]?.message || ''} ${
+                      userData.additional_errors[1]?.message || ''
+                    } ${userData.additional_errors[2]?.message || ''}`
+                  ).trim();
+                  alert(alertString);
+                } else if (userData.data.params.username) {
+                  alert(userData.data.params.username);
+                } else if (userData.data.params.password) {
+                  alert(userData.data.params.password);
+                }
+              } else {
+                alert(userData.message);
+              }
             }
           }
           this.loadingCtl.dismiss();
         })
         .catch((e) => {
+          alert(
+            'Username must be at least 3 characters long. Email must be valud and not already used. Password must be at least 6 characters long.'
+          );
           console.log(e);
           this.loadingCtl.dismiss;
         });
     }
+  }
+
+  focusInput(field: string) {
+    const input = document.getElementsByName(field)[0] as HTMLInputElement;
+    input.focus();
+  }
+
+  populateCredentials() {
+    this.username = this.dataservice.global_auth.email;
+    this.password = this.util.decryptPassword(
+      this.dataservice.global_auth.refresh_access
+    );
+    console.log('user pass', this.password);
   }
 
   toggleSigninRegister() {

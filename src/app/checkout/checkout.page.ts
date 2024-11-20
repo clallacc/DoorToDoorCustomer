@@ -737,7 +737,9 @@ export class CheckoutPage {
 
   async checkoutReview(status: boolean) {
     this.validateCheckoutItems();
-    if (!this.customer_adderss_set) {
+    if (!this.dataservice.global_auth.token) {
+      this.loginRegister();
+    } else if (!this.customer_adderss_set) {
       this.show_order_complete_notice = false;
       this.updateAddress();
     } else {
@@ -895,7 +897,7 @@ export class CheckoutPage {
           },
           {
             key: 'order_source',
-            value: 'd2d_app_v1',
+            value: 'd2d_app_v2',
           },
         ],
       };
